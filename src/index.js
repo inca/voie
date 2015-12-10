@@ -1,4 +1,4 @@
-import StateManager from './manager';
+import StateManager from './state-manager';
 import State from './state';
 import Transition from './transition';
 

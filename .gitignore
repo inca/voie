@@ -1,11 +1,7 @@
-# IntelliJ IDEA
-
 .idea/
 *.ipr
 *.iml
 *.iws
-
-# OS trash
 
 *.log
 *.bak
@@ -21,7 +17,5 @@ Thumbs.db
 desktop.ini
 nohup.out
 
-# Node JS
-
-node_modules
-
+node_modules/
+coverage/

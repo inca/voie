@@ -1,6 +1,4 @@
-'use strict';
-
-import { StateManager } from '../../lib';
+import StateManager from '../../src/state-manager';
 
 describe('State Manager', function() {
 
