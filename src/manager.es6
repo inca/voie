@@ -7,7 +7,7 @@ import State from './state';
 import Transition from './transition';
 import './view-directive';
 
-export default class Manager {
+export default class {
 
   constructor(options) {
     Object.assign(this, options || {});
