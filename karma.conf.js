@@ -22,16 +22,11 @@ module.exports = function(config) {
     browserify: {
       debug: true,
       transform: [
-        [ 'babelify', { presets: [ 'es2015' ] } ],
-        /*
-        require('browserify-istanbul')({
-          instrumenter: require('isparta')
-        })
-        */
+        [ 'babelify', { presets: [ 'es2015' ] } ]
       ]
     },
 
-    reporters: ['progress', 'coverage'],
+    reporters: ['spec'],
 
     client: {
       mocha: {
@@ -42,15 +37,6 @@ module.exports = function(config) {
     colors: true,
 
     logLevel: config.LOG_INFO,
-
-    coverageReporter: {
-      instrumenters: { isparta : require('isparta') },
-      instrumenter: {
-        '**/*.js': 'isparta'
-      },
-      type : 'html',
-      dir : 'coverage/'
-    },
 
     browsers: ['Chrome'],
 
