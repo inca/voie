@@ -7,7 +7,7 @@ import State from './state';
 import Transition from './transition';
 import './view-directive';
 
-export default class {
+export default class StateManager {
 
   constructor(options) {
     Object.assign(this, options || {});
@@ -16,7 +16,7 @@ export default class {
       throw new Error('Please specify `el` as an entry-point node of your app.')
     }
     this.states = {};
-    this.currentContext = {
+    this.context = {
       parent: null,
       state: null,  // root state
       vm: null,
@@ -39,6 +39,7 @@ export default class {
     }
     spec.name = name;
     const state = new State(this, spec);
+    debug('add %s', name);
     this.states[name] = state;
     return state;
   }
@@ -51,30 +52,28 @@ export default class {
     if (this.transition) {
       throw new Error('Transition is in progress. Abort it before going elsewhere.')
     }
-    if (typeof options === 'string') {
-      name = options;
-      options = {};
-    } else {
-      name = options.name;
-    }
-    if (!name) {
-      throw new Error('Target state `name` is required.')
-    }
-    debug('go %s', name);
-    const dstState = this.get(name);
-    if (!dstState) {
-      throw new Error('State "' + name + '" not found.');
-    }
-    this.transition = new Transition(this, {
-      srcContext: this.currentContext,
-      dstState: dstState,
-      params: Object.assign({}, this.currentContext.params, options.params)
-    });
+    this.transition = new Transition(this, options);
     return this.transition.run()
       .then(result => {
         delete this.transition;
         return result;
+      })
+      .catch(err => {
+        delete this.transition;
+        // TODO execute a hook
+        return Promise.reject(err);
       });
+  }
+
+  getCurrentEl() {
+    let el = null;
+    let ctx = this.context;
+    while (ctx && !el) {
+      let state = ctx.state;
+      el = state ? this.els[state.name] : this.el;
+      ctx = ctx.parent;
+    }
+    return el;
   }
 
 };
