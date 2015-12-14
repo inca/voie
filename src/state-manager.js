@@ -9,15 +9,22 @@ import './view-directive';
 
 export default class StateManager {
 
-  constructor(options) {
-    Object.assign(this, options || {});
-    this.el = options.el instanceof HTMLElement ?
-      options.el : document.querySelector(options.el);
+  constructor(spec) {
+    // Root element can be either HTMLElement or a selector
+    this.el = spec.el instanceof HTMLElement ?
+      spec.el : document.querySelector(spec.el);
     if (!this.el) {
       throw new Error('Please specify `el` as an entry-point node of your app.')
     }
-    this.maxRedirects = Number(options.maxRedirects) || 10;
+    // Optional handler for uncaught errors
+    if (spec.handleUncaught) {
+      this.handleUncaught = spec.handleUncaught;
+    }
+    // Redirect loops detection threshold
+    this.maxRedirects = Number(spec.maxRedirects) || 10;
+    // A map of all registered state (name -> State)
     this.states = {};
+    // Current context
     this.context = {
       parent: null,
       state: null,  // root state
@@ -25,7 +32,12 @@ export default class StateManager {
       params: {},
       data: {}
     };
+    // Mount points registered by v-view directive (name -> HTMLElement)
     this.mountPoints = {};
+  }
+
+  handleUncaught(err) {
+    return Promise.reject(err);
   }
 
   add(name, spec) {
@@ -62,8 +74,7 @@ export default class StateManager {
       })
       .catch(err => {
         delete this.transition;
-        // TODO execute a hook
-        return Promise.reject(err);
+        return this.handleUncaught(err);
       });
   }
 

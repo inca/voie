@@ -84,12 +84,25 @@ describe('Transitions', function() {
       .catch(done);
   });
 
-  it('should support returning redirect from state.enter hook', function(done) {
+  it('should support redirect via state.enter hook', function(done) {
     var sm = createStateManager();
     sm.get('groups.list').enter = () => ({ redirect: 'users' });
     sm.go('groups')
       .then(() => {
         assert.equal(sm.context.state.name, 'users.list');
+        done();
+      })
+      .catch(done);
+  });
+
+  it('should support rendering component via state.enter hook', function(done) {
+    var sm = createStateManager();
+    sm.get('groups.list').enter = () => ({
+      component: { template: '<h2>Groups</h2>' }
+    });
+    sm.go('groups')
+      .then(() => {
+        assert.equal(document.querySelector('h2#root').innerText, 'Groups');
         done();
       })
       .catch(done);
@@ -105,6 +118,60 @@ describe('Transitions', function() {
         assert.isDefined(err.transition);
         done();
       });
+  });
+
+  it('should handle uncaught errors ', function(done) {
+    var sm = createStateManager();
+    var handled = null;
+    sm.handleUncaught = function(err) {
+      handled = err;
+    };
+    sm.get('users.list').enter = () => {
+      throw new Error('oopsie');
+    };
+    sm.go('users.list')
+      .then(() => {
+        assert.ok(handled);
+        assert.equal(handled.message, 'oopsie');
+        done();
+      })
+      .catch(done);
+  });
+
+  it('should allow redirecting on errors', function(done) {
+    var sm = createStateManager();
+    var handled = false;
+    sm.get('users.list').enter = () => {
+      throw new Error('oopsie');
+    };
+    sm.get('users.list').handleError = () => {
+      handled = true;
+      return { redirect: 'groups.list' };
+    };
+    sm.go('users.list')
+      .then(() => {
+        assert.equal(sm.context.state.name, 'groups.list');
+        done();
+      })
+      .catch(done);
+  });
+
+  it('should render custom components on errors', function(done) {
+    var sm = createStateManager();
+    var handled = false;
+    sm.get('users.list').enter = () => {
+      throw new Error('oopsie');
+    };
+    sm.get('users.list').handleError = () => {
+      handled = true;
+      return { component: { template: '<h2>Error</h2>' } };
+    };
+    sm.go('users.list')
+      .then(() => {
+        assert.equal(document.querySelector('#root h2').innerText, 'Error');
+        done();
+      })
+      .catch(done);
   });
 
   function createStateManager() {

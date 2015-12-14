@@ -1,10 +1,10 @@
-[x] Detect redirect loops
-[ ] Error handling
+[x] detect redirect loops
+[x] error handling
 [ ] URL Routing
 
   [ ] test `.go` with params
   
-[ ] History support
+[ ] history support
 [ ] v-link directive
 [ ] reload
 [ ] replace

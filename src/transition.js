@@ -1,5 +1,6 @@
 import Debug from 'debug';
 import { StateNotFoundError, RedirectLoopError } from './error';
+import { toVueComponent } from './utils';
 
 const debug = Debug('voie:transition');
 
@@ -52,7 +53,6 @@ export default class Transition {
     // Stop going up if state is common with dst branch
     var state = ctx.state;
     if (this.dstState.includes(state)) {
-      // TODO check if can be reused
       return Promise.resolve();
     }
     return Promise.resolve()
@@ -91,34 +91,41 @@ export default class Transition {
     };
     return Promise.resolve()
       .then(() => nextState.enter(nextContext))
+      .catch(err => nextState.handleError(err, nextContext))
       .then(obj => {
         obj = obj || {};
-        // enter can return { redirect: 'new.state.name' }
+        debug(' -> entered %s', nextState.name);
+        // hooks can return { redirect: 'new.state.name' }
         if (typeof obj.redirect == 'string') {
           this.resolveDstState(obj.redirect, true);
           return this.run();
         }
-        // context entered
         this.manager.context = nextContext;
-        debug(' -> entered %s', nextState.name);
-        // render component, if any
-        if (nextState.component) {
-          var mp = this.manager.getMountPoint();
-          nextContext.mountPoint = mp;
-          nextContext.vm = new nextState.component({
-            data: nextContext.data,
-            el: mp,
-            params: nextContext.params,
-            ctx: nextContext,
-            state: nextState,
-            manager: this.manager
-          });
-        }
-        // Go further
+        // hooks can also return { component: <VueComponent> }
+        this.render(nextContext, obj.component);
         if (nextState != this.dstState) {
           return this.goDownstream();
         }
       });
+  }
+
+  render(ctx, comp) {
+    var state = ctx.state;
+    comp = comp || state.component;
+    if (!comp) {
+      return;
+    }
+    var Comp = toVueComponent(comp);
+    var mp = this.manager.getMountPoint();
+    ctx.mountPoint = mp;
+    ctx.vm = new Comp({
+      data: ctx.data,
+      el: mp,
+      params: ctx.params,
+      ctx: ctx,
+      state: state,
+      manager: this.manager
+    });
   }
 
 }
