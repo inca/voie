@@ -16,7 +16,7 @@ export default class State {
     this.lineage = this.parentState ? this.parentState.lineage.concat([this]) : [this];
     // Component is optional
     if (spec.component) {
-      this.component = toVueComponent(this.component);
+      this.component = toVueComponent(spec.component);
     }
     // Enter/leave hooks are optional
     if (spec.enter) {

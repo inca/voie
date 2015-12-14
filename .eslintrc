@@ -10,7 +10,8 @@
     "classes": true,
     "objectLiteralShorthandMethods": true,
     "objectLiteralShorthandProperties": true,
-    "destructuring": true
+    "destructuring": true,
+    "templateStrings": true
   },
   "rules": {
     "no-mixed-requires": 0,

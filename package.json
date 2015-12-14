@@ -9,6 +9,8 @@
   "main": "lib/index.js",
   "dependencies": {
     "debug": "^2.2.0",
+    "history": "^1.16.0",
+    "path-to-regexp": "^1.2.1",
     "vue": "^1.0.10"
   },
   "devDependencies": {

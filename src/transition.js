@@ -53,7 +53,11 @@ export default class Transition {
       .then(() => {
         debug(' <- left %s', state.name);
         if (ctx.vm) {
+          var el = ctx.vm.$el;
           ctx.vm.$destroy();
+          if (ctx.mountPoint) {
+            el.parentNode.replaceChild(ctx.mountPoint, el);
+          }
         }
         this.manager.context = ctx.parent;
         return this.goUpstream();
@@ -84,18 +88,20 @@ export default class Transition {
           if (!redirectToState) {
             return Promise.reject(new StateNotFoundError(obj.redirect));
           }
-          debug('redirect to', redirectToState.name, redirectToState);
-          this.dstState = redirectToState;
+          debug('redirect to %s', redirectToState.name);
+          this.dstState = this.resolveDstState(redirectToState.name);
           return this.run();
         }
         // context entered
         this.manager.context = nextContext;
-        debug(' -> entered', nextState.name);
+        debug(' -> entered %s', nextState.name);
         // render component, if any
         if (nextState.component) {
+          var mp = this.manager.getMountPoint();
+          nextContext.mountPoint = mp;
           nextContext.vm = new nextState.component({
             data: nextContext.data,
-            el: this.manager.getCurrentEl(),
+            el: mp,
             params: nextContext.params,
             ctx: nextContext,
             state: nextState,

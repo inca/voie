@@ -11,7 +11,8 @@ export default class StateManager {
 
   constructor(options) {
     Object.assign(this, options || {});
-    this.el = options.el;
+    this.el = options.el instanceof HTMLElement ?
+      options.el : document.querySelector(options.el);
     if (!this.el) {
       throw new Error('Please specify `el` as an entry-point node of your app.')
     }
@@ -23,7 +24,7 @@ export default class StateManager {
       params: {},
       data: {}
     };
-    this.els = {};
+    this.mountPoints = {};
   }
 
   add(name, spec) {
@@ -65,12 +66,12 @@ export default class StateManager {
       });
   }
 
-  getCurrentEl() {
+  getMountPoint() {
     let el = null;
     let ctx = this.context;
     while (ctx && !el) {
       let state = ctx.state;
-      el = state ? this.els[state.name] : this.el;
+      el = state ? this.mountPoints[state.name] : this.el;
       ctx = ctx.parent;
     }
     return el;
