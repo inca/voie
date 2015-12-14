@@ -16,6 +16,7 @@ export default class StateManager {
     if (!this.el) {
       throw new Error('Please specify `el` as an entry-point node of your app.')
     }
+    this.maxRedirects = Number(options.maxRedirects) || 10;
     this.states = {};
     this.context = {
       parent: null,

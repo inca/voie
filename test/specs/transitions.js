@@ -1,4 +1,5 @@
 import StateManager from '../../src/state-manager';
+import { RedirectLoopError } from '../../src/error';
 
 describe('Transitions', function() {
 
@@ -92,6 +93,18 @@ describe('Transitions', function() {
         done();
       })
       .catch(done);
+  });
+
+  it('should detect redirect loops', function(done) {
+    var sm = createStateManager();
+    sm.get('groups.list').enter = () => ({ redirect: 'users' });
+    sm.get('users.list').enter = () => ({ redirect: 'groups' });
+    sm.go('groups')
+      .then(() => done(new Error('Redirect loop not detected.')))
+      .catch(err => {
+        assert.isDefined(err.transition);
+        done();
+      });
   });
 
   function createStateManager() {

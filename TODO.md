@@ -1,3 +1,4 @@
+[x] Detect redirect loops
 [ ] Error handling
 [ ] URL Routing
 

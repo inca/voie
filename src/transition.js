@@ -1,5 +1,5 @@
 import Debug from 'debug';
-import { StateNotFoundError } from './error';
+import { StateNotFoundError, RedirectLoopError } from './error';
 
 const debug = Debug('voie:transition');
 
@@ -7,6 +7,7 @@ export default class Transition {
 
   constructor(manager, spec) {
     this.manager = manager;
+    this.redirectsCount = 0;
     let dstStateName;
     if (typeof spec === 'string') {
       dstStateName = spec;
@@ -15,20 +16,26 @@ export default class Transition {
       dstStateName = options.name;
     }
     debug('go to %s', dstStateName);
-    this.dstState = this.resolveDstState(dstStateName);
+    this.resolveDstState(dstStateName);
     this.params = spec.params || {};
   }
 
-  resolveDstState(name) {
+  resolveDstState(name, isRedirect) {
+    if (isRedirect) {
+      debug('redirect to %s', name);
+    }
     var state = this.manager.get(name);
     if (!state) {
       throw new StateNotFoundError(name);
     }
+    this.dstState = state;
     if (state.redirect) {
-      debug('redirect from %s to %s', name, state.redirect);
-      return this.resolveDstState(state.redirect);
+      this.redirectsCount++;
+      if (this.redirectsCount > this.manager.maxRedirects) {
+        throw new RedirectLoopError(this);
+      }
+      this.resolveDstState(state.redirect, true);
     }
-    return state;
   }
 
   run() {
@@ -52,16 +59,20 @@ export default class Transition {
       .then(() => state.leave(ctx))
       .then(() => {
         debug(' <- left %s', state.name);
-        if (ctx.vm) {
-          var el = ctx.vm.$el;
-          ctx.vm.$destroy();
-          if (ctx.mountPoint) {
-            el.parentNode.replaceChild(ctx.mountPoint, el);
-          }
-        }
-        this.manager.context = ctx.parent;
-        return this.goUpstream();
-      });
+        this.cleanup(ctx);
+      })
+      .then(() => this.goUpstream());
+  }
+
+  cleanup(ctx) {
+    if (ctx.vm) {
+      var el = ctx.vm.$el;
+      ctx.vm.$destroy();
+      if (ctx.mountPoint) {
+        el.parentNode.replaceChild(ctx.mountPoint, el);
+      }
+    }
+    this.manager.context = ctx.parent;
   }
 
   goDownstream() {
@@ -84,12 +95,7 @@ export default class Transition {
         obj = obj || {};
         // enter can return { redirect: 'new.state.name' }
         if (typeof obj.redirect == 'string') {
-          var redirectToState = this.manager.get(obj.redirect);
-          if (!redirectToState) {
-            return Promise.reject(new StateNotFoundError(obj.redirect));
-          }
-          debug('redirect to %s', redirectToState.name);
-          this.dstState = this.resolveDstState(redirectToState.name);
+          this.resolveDstState(obj.redirect, true);
           return this.run();
         }
         // context entered
