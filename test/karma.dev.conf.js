@@ -3,6 +3,8 @@
 module.exports = function(config) {
   config.set({
 
+    basePath: '..',
+
     port: 9876,
 
     files: [

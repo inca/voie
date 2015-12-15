@@ -2,29 +2,39 @@ import Debug from 'debug';
 
 const debug = Debug('voie:manager');
 
+import EventEmitter from 'eventemitter3';
 import Vue from 'vue';
 import State from './state';
 import Transition from './transition';
-import './view-directive';
+import './directives';
 
-export default class StateManager {
+export default class StateManager extends EventEmitter {
 
   constructor(spec) {
-    // Root element can be either HTMLElement or a selector
+    super();
+    this._setupEl(spec);
+    this._setupOptions(spec);
+    this._setupState();
+  }
+
+  _setupEl(spec) {
     this.el = spec.el instanceof HTMLElement ?
       spec.el : document.querySelector(spec.el);
     if (!this.el) {
       throw new Error('Please specify `el` as an entry-point node of your app.')
     }
-    // Optional handler for uncaught errors
+  }
+
+  _setupOptions(spec) {
     if (spec.handleUncaught) {
       this.handleUncaught = spec.handleUncaught;
     }
-    // Redirect loops detection threshold
     this.maxRedirects = Number(spec.maxRedirects) || 10;
-    // A map of all registered state (name -> State)
+    this.activeClass = spec.activeClass || 'active';
+  }
+
+  _setupState() {
     this.states = {};
-    // Current context
     this.context = {
       parent: null,
       state: null,  // root state
@@ -32,7 +42,6 @@ export default class StateManager {
       params: {},
       data: {}
     };
-    // Mount points registered by v-view directive (name -> HTMLElement)
     this.mountPoints = {};
   }
 

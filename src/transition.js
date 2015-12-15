@@ -14,7 +14,7 @@ export default class Transition {
       dstStateName = spec;
       spec = {};
     } else {
-      dstStateName = options.name;
+      dstStateName = spec.name;
     }
     debug('go to %s', dstStateName);
     this.resolveDstState(dstStateName);
@@ -73,6 +73,7 @@ export default class Transition {
       }
     }
     this.manager.context = ctx.parent;
+    this.manager.emit('state_changed', this.manager.context);
   }
 
   goDownstream() {
@@ -103,6 +104,7 @@ export default class Transition {
         this.manager.context = nextContext;
         // hooks can also return { component: <VueComponent> }
         this.render(nextContext, obj.component);
+        this.manager.emit('state_changed', this.manager.context);
         if (nextState != this.dstState) {
           return this.goDownstream();
         }

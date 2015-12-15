@@ -34,7 +34,7 @@ describe('States', function() {
     assert.equal(groups.lineage[1], groups);
   });
 
-  it('should detect included state (check if self of ancestor)', function() {
+  it('should detect included state (check if self or ancestor)', function() {
     var sm = createStateManager();
     assert.ok(sm.get('users.list').includes('users'));
     assert.notOk(sm.get('users.list').includes('groups'));
