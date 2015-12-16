@@ -6,6 +6,7 @@ import EventEmitter from 'eventemitter3';
 import Vue from 'vue';
 import State from './state';
 import Transition from './transition';
+import { createHistory, useBasename} from 'history';
 import './directives';
 
 export default class StateManager extends EventEmitter {
@@ -13,6 +14,7 @@ export default class StateManager extends EventEmitter {
   constructor(spec) {
     super();
     this._setupEl(spec);
+    this._setupHistory(spec);
     this._setupOptions(spec);
     this._setupState();
   }
@@ -23,6 +25,25 @@ export default class StateManager extends EventEmitter {
     if (!this.el) {
       throw new Error('Please specify `el` as an entry-point node of your app.')
     }
+  }
+
+  _setupHistory(spec) {
+    if (spec.history) {
+      this.history = spec.history;
+    } else {
+      this._setupDefaultHtml5History(spec);
+    }
+  }
+
+  _setupDefaultHtml5History(spec) {
+    var base = spec.base;
+    // Try to take base from `<base href=""/>`
+    if (!base) {
+      var baseEl = document.querySelector('base');
+      base = baseEl && baseEl.getAttribute('href');
+    }
+    base = (base || '').replace(/\/+$/, '');
+    this.history = useBasename(createHistory)({ basename: base });
   }
 
   _setupOptions(spec) {

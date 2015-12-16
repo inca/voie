@@ -106,4 +106,8 @@ export default class State {
     }, {});
   }
 
+  createHref(params) {
+    return this.manager.history.createHref(this.urlFormat(params));
+  }
+
 };

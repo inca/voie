@@ -1,11 +1,11 @@
 <template>
   <div class="sidenav">
     <a class="sidenav-link"
-       v-link="users">
+       v-link="{ name: 'users' }">
       Users
     </a>
     <a class="sidenav-link"
-       v-link="groups">
+       v-link="{ name: 'groups' }">
       Groups
     </a>
   </div>
@@ -22,6 +22,7 @@
     padding: 1em;
     background: hsl(192, 20%, 20%);
     color: #fff;
+    text-decoration: none;
   }
 
   .sidenav-link.active {

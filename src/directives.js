@@ -26,42 +26,39 @@ Vue.directive('link', {
     if (!this.manager) {
       throw new Error('Can\'t find state manager.')
     }
-    this.manager.on('state_changed', this.updateClass, this);
+    this.manager.on('state_changed', this.updateElement, this);
   },
 
   unbind() {
-    this.manager.off('state_changed', this.updateClass, this);
+    this.manager.off('state_changed', this.updateElement, this);
   },
 
   update(value) {
-    value = value || this.expression;
+    var manager = this.manager;
     var name = null;
-    var params = {};
+    this.params = Object.assign({}, manager.context.params);
     if (typeof value == 'string') {
-      params = {};
       name = value;
     } else {
-      params = val.params || {};
-      name = val.name;
+      Object.assign(this.params, value.params || {});
+      name = value.name;
     }
-    var manager = this.manager;
     this.state = manager.get(name);
     if (!this.state) {
       throw new Error('State "' + name + '" not found.');
     }
-    // TODO set href
-    this.el.onclick = function(ev) {
+    this.el.onclick = (ev) => {
       ev.preventDefault();
       manager.go({
         name: name,
-        params: params
+        params: this.params
       });
     };
-    this.updateClass();
+    this.updateElement();
 
   },
 
-  updateClass() {
+  updateElement() {
     var manager = this.manager;
     var state = this.state;
     var currentState = manager.context.state;
@@ -72,6 +69,7 @@ Vue.directive('link', {
     } else {
       this.el.classList.remove(manager.activeClass);
     }
+    this.el.setAttribute('href', state.createHref(this.params));
   }
 
 });

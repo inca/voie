@@ -70,6 +70,7 @@ export default class Transition {
       ctx.vm.$destroy();
       if (ctx.mountPoint) {
         el.parentNode.replaceChild(ctx.mountPoint, el);
+        ctx._mountPointChildren.forEach(el => ctx.mountPoint.appendChild(el));
       }
     }
     this.manager.context = ctx.parent;
@@ -120,6 +121,8 @@ export default class Transition {
     var Comp = toVueComponent(comp);
     var mp = this.manager.getMountPoint();
     ctx.mountPoint = mp;
+    // Preserve mount point children, b/c they are destroyed by Vue
+    ctx._mountPointChildren = [].slice.call(mp.children);
     ctx.vm = new Comp({
       data: ctx.data,
       el: mp,
