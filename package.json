@@ -1,6 +1,6 @@
 {
   "name": "voie",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Voie.js — simple router / layout manager for Vue",
   "repository": {
     "type": "git",
