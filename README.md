@@ -3,6 +3,8 @@
 **Voie** /vwa/ (fr. "way") is a simple router / layout manager for [Vue.js](http://vuejs.org).
 Use it to build SPAs of your dreams.
 
+Current status: **active development** — any feedback appreciated.
+
 ## Core concepts
 
 Unlike official [vue-router](https://github.com/vuejs/vue-router) which
@@ -141,7 +143,7 @@ import './states';
 app.start();
 ```
 
-It will begin listen for history events and match-end-render current route.
+It will begin listening for history events and match-and-render current route.
 
 ### Navigating states
 
@@ -165,7 +167,7 @@ In templates you can use `v-link` directive with the same semantics:
 ```
 
 In addition to invoking `stateManager.go` it will also update the `href`
-attribute and apply an `active` class if current state includes
+attribute and apply an `active` class if current state "includes"
 the state specified by link.
 
 ### Enter / leave
@@ -199,13 +201,14 @@ Example:
 ### Redirecting
 
 Enter can optionally redirect to another state by
-returning (resolving via promise) and object like this: `{ redirect: 'state.name' }`.
+returning (or resolving via promise) an object like this: `{ redirect: 'state.name' }`.
 
-Note that it's different from `redirect` configuration on `State`: when redirect
-is returned by `enter` hook, the transition will always redirect there whenever
-it enters specified state (even if this state was not a destination) while
-`redirect` configuration option will only be effective when moving specifically
-to this state.
+Note that it's different from `redirect` configuration on `State`: 
+when redirect is returned by `enter` hook the transition will always redirect
+whenever it enters specified state (even if this state was not a destination).
+In contrast, if `redirect` is specified as state configuration option it will 
+only be effective when moving specifically to this state (in other words,
+no redirect occurs when transitioning through this state to another one).
 
 ### State transitions
 
