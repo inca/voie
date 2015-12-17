@@ -1,4 +1,4 @@
-const Vue = require('vue');
+import Vue from 'vue';
 
 export function toVueComponent(obj) {
   if (obj.name == 'VueComponent') {
@@ -6,5 +6,3 @@ export function toVueComponent(obj) {
   }
   return Vue.extend(obj);
 }
-
-window.Vue = Vue;

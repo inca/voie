@@ -25,7 +25,7 @@ export default class Transition {
     if (isRedirect) {
       debug('redirect to %s', name);
     }
-    var state = this.manager.get(name);
+    let state = this.manager.get(name);
     if (!state) {
       throw new StateNotFoundError(name);
     }
@@ -45,15 +45,20 @@ export default class Transition {
   }
 
   goUpstream() {
-    var ctx = this.manager.context;
+    let ctx = this.manager.context;
     if (!ctx.state) {
       // We're at root state, no cleanup is necessary
       return Promise.resolve();
     }
     // Stop going up if state is common with dst branch
-    var state = ctx.state;
+    let state = ctx.state;
     if (this.dstState.includes(state)) {
-      return Promise.resolve();
+      // All ctx params must match target ones (e.g. when going from /user/1 to /user/2)
+      let paramsMatch = Object.keys(ctx.params)
+        .every(key => ctx.params[key] == this.params[key]);
+      if (paramsMatch) {
+        return Promise.resolve();
+      }
     }
     return Promise.resolve()
       .then(() => state.leave(ctx))
@@ -66,7 +71,7 @@ export default class Transition {
 
   cleanup(ctx) {
     if (ctx.vm) {
-      var el = ctx.vm.$el;
+      let el = ctx.vm.$el;
       ctx.vm.$destroy();
       if (ctx.mountPoint) {
         el.parentNode.replaceChild(ctx.mountPoint, el);
@@ -78,14 +83,14 @@ export default class Transition {
   }
 
   goDownstream() {
-    var prevCtx = this.manager.context;
-    var dstLineage = this.dstState.lineage;
-    var nextState = dstLineage[dstLineage.indexOf(prevCtx.state) + 1];
+    let prevCtx = this.manager.context;
+    let dstLineage = this.dstState.lineage;
+    let nextState = dstLineage[dstLineage.indexOf(prevCtx.state) + 1];
     if (!nextState) {
       return Promise.resolve();
     }
     // New context inherits params and data from parent
-    var nextContext = {
+    let nextContext = {
       parent: prevCtx,
       state: nextState,
       params: Object.assign({}, prevCtx.params, this.params),
@@ -113,13 +118,13 @@ export default class Transition {
   }
 
   render(ctx, comp) {
-    var state = ctx.state;
+    let state = ctx.state;
     comp = comp || state.component;
     if (!comp) {
       return;
     }
-    var Comp = toVueComponent(comp);
-    var mp = this.manager.getMountPoint();
+    let Comp = toVueComponent(comp);
+    let mp = this.manager._getMountPoint();
     ctx.mountPoint = mp;
     // Preserve mount point children, b/c they are destroyed by Vue
     ctx._mountPointChildren = [].slice.call(mp.children);

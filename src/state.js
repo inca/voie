@@ -48,7 +48,7 @@ export default class State {
     if (this.url.indexOf('/') == 0) {
       this.fullUrl = this.url;
     } else {
-      var parentUrl = this.parentState ? this.parentState.fullUrl : '/';
+      let parentUrl = this.parentState ? this.parentState.fullUrl : '/';
       this.fullUrl = parentUrl.replace(/\/+$/, '') + (this.url ? '/' + this.url : '');
     }
     if (!this.fullUrl) {
@@ -85,7 +85,7 @@ export default class State {
    * @return {boolean}
    */
   includes(stateOrName) {
-    var state = stateOrName instanceof State ? stateOrName : this.manager.get(stateOrName);
+    let state = stateOrName instanceof State ? stateOrName : this.manager.get(stateOrName);
     return this.lineage.indexOf(state) > -1;
   }
 
@@ -96,7 +96,7 @@ export default class State {
    * @returns an object with extracted params or `null` if don't match.
    */
   match(pathname) {
-    var result = this.urlRegex.exec(pathname);
+    let result = this.urlRegex.exec(pathname);
     if (!result) {
       return null;
     }

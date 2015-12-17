@@ -6,13 +6,13 @@ const debug = Debug('voie:directive');
 Vue.elementDirective('v-view', {
 
   bind() {
-    var { state, manager } = this.vm.$options;
+    let { state, manager } = this.vm.$options;
     manager.mountPoints[state.name] = this.el;
     debug('registered v-view', this.el);
   },
 
   unbind() {
-    var { state, manager } = this.vm.$options;
+    let { state, manager } = this.vm.$options;
     delete manager.mountPoints[state.name];
     debug('unregistered v-view', this.el);
   }
@@ -34,8 +34,8 @@ Vue.directive('link', {
   },
 
   update(value) {
-    var manager = this.manager;
-    var name = null;
+    let manager = this.manager;
+    let name = null;
     this.params = Object.assign({}, manager.context.params);
     if (typeof value == 'string') {
       name = value;
@@ -59,10 +59,10 @@ Vue.directive('link', {
   },
 
   updateElement() {
-    var manager = this.manager;
-    var state = this.state;
-    var currentState = manager.context.state;
-    var active = state && currentState && currentState.includes(state);
+    let manager = this.manager;
+    let state = this.state;
+    let currentState = manager.context.state;
+    let active = state && currentState && currentState.includes(state);
     // TODO add option to strict match states
     if (active) {
       this.el.classList.add(manager.activeClass);
@@ -75,7 +75,7 @@ Vue.directive('link', {
 });
 
 function resolveManager(vm) {
-  var manager = vm.$options.manager;
+  let manager = vm.$options.manager;
   if (manager) {
     return manager;
   }

@@ -107,9 +107,17 @@ import './groups';
 ```es6
 // users/index.js
 import app from '../app';
+import UsersLayout from './layout.vue';
+import UsersList from './list.vue';
 
-app.add('users', { ... });
-app.add('users.list', { ... });
+app.add('users', {
+  component: UsersLayout
+  ...
+});
+app.add('users.list', {
+  component: UsersList,
+  ...
+});
 app.add('users.create', { ... });
 app.add('user', { ... });
 app.add('user.view', { ... });
@@ -128,8 +136,8 @@ app.add('groups', { ... });
 Structuring apps is a matter of preference, so you are free to choose
 whatever suits you best.
 
-Also be sure to check our [end-to-end test application](test/e2e/) to find more
-about structuring apps.
+Also be sure to check our [end-to-end test application](test/e2e/)
+for an example of app structure.
 
 ### Running
 
@@ -169,6 +177,15 @@ In templates you can use `v-link` directive with the same semantics:
 In addition to invoking `stateManager.go` it will also update the `href`
 attribute and apply an `active` class if current state "includes"
 the state specified by link.
+
+Active class name can be customised globally:
+
+```
+new StateManager({
+  el: '#el',
+  activeClass: 'highlighted'
+});
+```
 
 ### Enter / leave
 

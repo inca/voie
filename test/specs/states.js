@@ -3,28 +3,28 @@ import StateManager from '../../src/state-manager';
 describe('States', function() {
 
   it('state manager should register states', function() {
-    var sm = createStateManager();
+    let sm = createStateManager();
     assert.ok(sm.get('app'));
     assert.ok(sm.get('app.welcome'));
     assert.notOk(sm.get('app.wut'));
   });
 
   it('parents are inferred from names', function() {
-    var sm = createStateManager();
+    let sm = createStateManager();
     assert.equal(sm.get('app.welcome').parentState, sm.get('app'));
     assert.equal(sm.get('app.welcome.hello').parentState, sm.get('app.welcome'));
   });
 
   it('parent states can be specified explicitly', function() {
-    var sm = createStateManager();
+    let sm = createStateManager();
     assert.equal(sm.get('users').parentState, sm.get('app'));
     assert.equal(sm.get('groups').parentState, sm.get('app'));
   });
 
   it('lineage shows upstream path from state to root', function() {
-    var sm = createStateManager();
-    var usersList = sm.get('users.list');
-    var groups = sm.get('groups');
+    let sm = createStateManager();
+    let usersList = sm.get('users.list');
+    let groups = sm.get('groups');
     assert.lengthOf(usersList.lineage, 3);
     assert.equal(usersList.lineage[0], sm.get('app'));
     assert.equal(usersList.lineage[1], sm.get('users'));
@@ -35,7 +35,7 @@ describe('States', function() {
   });
 
   it('should detect included state (check if self or ancestor)', function() {
-    var sm = createStateManager();
+    let sm = createStateManager();
     assert.ok(sm.get('users.list').includes('users'));
     assert.notOk(sm.get('users.list').includes('groups'));
     // By state
@@ -43,7 +43,7 @@ describe('States', function() {
   });
 
   function createStateManager() {
-    var sm = new StateManager({
+    let sm = new StateManager({
       el: document.body
     });
     sm.add({ name: 'app' });

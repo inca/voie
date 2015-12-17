@@ -4,24 +4,24 @@ import { RedirectLoopError } from '../../src/error';
 describe('Transitions', function() {
 
   beforeEach(() => {
-    var root = document.createElement('div');
+    let root = document.createElement('div');
     root.setAttribute('id', 'root');
     document.body.appendChild(root);
   });
 
   afterEach(() => {
-    var root = document.getElementById('root');
+    let root = document.getElementById('root');
     document.body.removeChild(root);
   });
 
   it('should leave upstream and enter downstream states', function(done) {
-    var sm = createStateManager();
-    var entered = [];
-    var left = [];
+    let sm = createStateManager();
+    let entered = [];
+    let left = [];
     ['app', 'users', 'users.list', 'groups', 'groups.list'].forEach(name => {
-      var state = sm.get(name);
-      var e = state.enter;
-      var l = state.leave;
+      let state = sm.get(name);
+      let e = state.enter;
+      let l = state.leave;
       state.enter = (ctx) => { entered.push(state.name); return e(ctx); };
       state.leave = (ctx) => { left.push(state.name); return l(ctx) };
     });
@@ -50,7 +50,7 @@ describe('Transitions', function() {
   });
 
   it('should allow visiting redirect-only states', function(done) {
-    var sm = createStateManager();
+    let sm = createStateManager();
     sm.go('users')
       .then(() => {
         assert.equal(sm.context.state.name, 'users.list');
@@ -60,7 +60,7 @@ describe('Transitions', function() {
   });
 
   it('should load state data and render component in layout hierarchy', function(done) {
-    var sm = createStateManager();
+    let sm = createStateManager();
     sm.go('users')
       .then(() => {
         assert.equal(document.querySelector('#root h1').innerText, 'Users');
@@ -72,7 +72,7 @@ describe('Transitions', function() {
   });
 
   it('should dispose of stale components and render new data', function(done) {
-    var sm = createStateManager();
+    let sm = createStateManager();
     sm.go('users')
       .then(() => sm.go('groups'))
       .then(() => {
@@ -85,7 +85,7 @@ describe('Transitions', function() {
   });
 
   it('should support redirect via state.enter hook', function(done) {
-    var sm = createStateManager();
+    let sm = createStateManager();
     sm.get('groups.list').enter = () => ({ redirect: 'users' });
     sm.go('groups')
       .then(() => {
@@ -96,7 +96,7 @@ describe('Transitions', function() {
   });
 
   it('should support rendering component via state.enter hook', function(done) {
-    var sm = createStateManager();
+    let sm = createStateManager();
     sm.get('groups.list').enter = () => ({
       component: { template: '<h2>Groups</h2>' }
     });
@@ -109,7 +109,7 @@ describe('Transitions', function() {
   });
 
   it('should detect redirect loops', function(done) {
-    var sm = createStateManager();
+    let sm = createStateManager();
     sm.get('groups.list').enter = () => ({ redirect: 'users' });
     sm.get('users.list').enter = () => ({ redirect: 'groups' });
     sm.go('groups')
@@ -121,8 +121,8 @@ describe('Transitions', function() {
   });
 
   it('should handle uncaught errors ', function(done) {
-    var sm = createStateManager();
-    var handled = null;
+    let sm = createStateManager();
+    let handled = null;
     sm.handleUncaught = function(err) {
       handled = err;
     };
@@ -139,8 +139,8 @@ describe('Transitions', function() {
   });
 
   it('should allow redirecting on errors', function(done) {
-    var sm = createStateManager();
-    var handled = false;
+    let sm = createStateManager();
+    let handled = false;
     sm.get('users.list').enter = () => {
       throw new Error('oopsie');
     };
@@ -157,8 +157,8 @@ describe('Transitions', function() {
   });
 
   it('should render custom components on errors', function(done) {
-    var sm = createStateManager();
-    var handled = false;
+    let sm = createStateManager();
+    let handled = false;
     sm.get('users.list').enter = () => {
       throw new Error('oopsie');
     };
@@ -175,7 +175,7 @@ describe('Transitions', function() {
   });
 
   function createStateManager() {
-    var sm = new StateManager({
+    let sm = new StateManager({
       el: '#root'
     });
 

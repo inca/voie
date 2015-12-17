@@ -1,8 +1,8 @@
 [x] detect redirect loops
 [x] error handling
-[ ] URL Routing
-[ ] history support
+[x] URL Routing
+[x] history support
 [ ] query string
-[ ] v-link directive
+[x] v-link directive
 [ ] reload
-[ ] replace
+[x] replace
