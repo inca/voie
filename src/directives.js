@@ -37,6 +37,10 @@ Vue.directive('link', {
     let manager = this.manager;
     let name = null;
     this.params = Object.assign({}, manager.context.params);
+    if (!value) {
+      throw new Error('v-link: expression "' +
+        this.expression + '" should resolve to { name: ..., params... }}')
+    }
     if (typeof value == 'string') {
       name = value;
     } else {
@@ -45,7 +49,10 @@ Vue.directive('link', {
     }
     this.state = manager.get(name);
     if (!this.state) {
-      throw new Error('State "' + name + '" not found.');
+      /* eslint-disable no-console */
+      console.warn('State "' + name + '" not found.');
+      /* eslint-enable no-console */
+      return;
     }
     this.el.onclick = (ev) => {
       ev.preventDefault();
