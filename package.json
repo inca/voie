@@ -48,7 +48,7 @@
     "prepublish": "npm run compile"
   },
   "pre-commit": [
-    "check", "compile"
+    "check"
   ],
   "babel": {
     "presets": [
