@@ -44,12 +44,11 @@
   "scripts": {
     "check": "node_modules/eslint/bin/eslint.js .",
     "dev": "node_modules/karma/bin/karma start ./test/karma.dev.conf.js",
-    "e2e": "node_modules/babel-cli/bin/babel-node.js test/e2e/server.js",
     "compile": "node_modules/babel-cli/bin/babel.js src --out-dir lib",
     "prepublish": "npm run compile"
   },
   "pre-commit": [
-    "check"
+    "check", "compile"
   ],
   "babel": {
     "presets": [
