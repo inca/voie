@@ -10,8 +10,10 @@ export default class State {
     this._setupComponent(spec);
     this._setupHooks(spec);
     this._setupUrl(spec);
+    this._setupParams(spec);
     this._setupOptions(spec);
   }
+
 
   _setupName(spec) {
     this.name = spec.name;
@@ -59,6 +61,13 @@ export default class State {
     this.urlFormat = pathToRegexp.compile(this.fullUrl);
   }
 
+  _setupParams(spec) {
+    this.paramsSpec = Object.assign({}, spec.params);
+    this.urlParams.forEach(param => {
+      this.paramsSpec[param.name] = null;
+    });
+  }
+
   _setupOptions(spec) {
     if (spec.redirect) {
       this.redirect = spec.redirect;
@@ -90,7 +99,7 @@ export default class State {
   }
 
   /**
-   * Attempt to match `pathname` to this state's URL pattern.
+   * Attempts to match `pathname` to this state's URL pattern.
    *
    * @param {string} pathname
    * @returns an object with extracted params or `null` if don't match.
@@ -103,6 +112,20 @@ export default class State {
     return this.urlParams.reduce((params, p, i) => {
       params[p.name] = result[i + 1];
       return params;
+    }, {});
+  }
+
+  /**
+   * Constructs a `params` object by dropping any parameters
+   * not specified in `paramsSpec` of this state.
+   * Values from `paramsSpec` act as defaults.
+   *
+   * @param {object} params
+   */
+  makeParams(params) {
+    return Object.keys(this.paramsSpec).reduce((result, name) => {
+      result[name] = name in params ? params[name] : this.paramsSpec[name];
+      return result;
     }, {});
   }
 

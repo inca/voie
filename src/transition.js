@@ -53,7 +53,8 @@ export default class Transition {
     // Stop going up if state is common with dst branch
     let state = ctx.state;
     if (this.dstState.includes(state)) {
-      // All ctx params must match target ones (e.g. when going from /user/1 to /user/2)
+      // All ctx params must match target ones
+      // (e.g. when going from /user/1 to /user/2)
       let paramsMatch = Object.keys(ctx.params)
         .every(key => ctx.params[key] == this.params[key]);
       if (paramsMatch) {
@@ -93,7 +94,7 @@ export default class Transition {
     let nextContext = {
       parent: prevCtx,
       state: nextState,
-      params: Object.assign({}, prevCtx.params, this.params),
+      params: Object.assign({}, prevCtx.params, nextState.makeParams(this.params)),
       data: Object.assign({}, prevCtx.data)
     };
     return Promise.resolve()

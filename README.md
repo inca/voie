@@ -136,9 +136,6 @@ app.add('groups', { ... });
 Structuring apps is a matter of preference, so you are free to choose
 whatever suits you best.
 
-Also be sure to check our [end-to-end test application](test/e2e/)
-for an example of app structure.
-
 ### Running
 
 Finally, run your state manager like this:
@@ -152,6 +149,66 @@ app.start();
 ```
 
 It will begin listening for history events and match-and-render current route.
+
+## More usage
+
+### States hierarchy
+
+States are automatically organized into a tree-like structure. Each state
+will have a single parent state. "Root" states would have a `null` parent
+
+There are two ways of specifying a parent:
+
+  * using dot character `.` in state name 
+    (e.g. `user` -> `user.transaction` -> `user.transaction.details`)
+    
+  * explicitly using `parent` configuration parameter:
+  
+    ```es6
+    app.add('users', { ... });
+    app.add('user', {
+      parent: 'users'
+    });
+    ```
+
+Each way has its own advantages, so it's usually OK to use both styles in the same app.
+Specifically, use qualified names to outline context (e.g. "User's profile page" would
+be `user.profile`) or entity-relationship (e.g. "User's transactions list would
+be `user.transactions`).
+
+Specifying `parent` is handy in cases when you want to preserve concise and clean state name
+while being able to use a different layout or add some global "enter" hook on state subtree.
+
+A typical example would be authentication/authorization:
+
+```es6
+app.add('root', { ... });
+
+app.add('login', {
+  parent: 'root',
+  ...
+});
+
+app.add('authenticated', {
+  parent: 'root',
+  enter: ctx => {
+    if (!UserService.isAuthenticated()) {
+      return { redirect: 'login' };
+    }
+  }
+});
+
+app.add('users', {
+  parent: 'authenticated',
+  ...
+});
+
+app.add('groups', {
+  parent: 'authenticated',
+  ...
+});
+
+```
 
 ### Navigating states
 
@@ -180,7 +237,7 @@ the state specified by link.
 
 Active class name can be customised globally:
 
-```
+```es6
 new StateManager({
   el: '#el',
   activeClass: 'highlighted'

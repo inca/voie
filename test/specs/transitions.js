@@ -1,5 +1,6 @@
 import StateManager from '../../src/state-manager';
 import { RedirectLoopError } from '../../src/error';
+import { createMemoryHistory } from 'history';
 
 describe('Transitions', function() {
 
@@ -176,7 +177,8 @@ describe('Transitions', function() {
 
   function createStateManager() {
     let sm = new StateManager({
-      el: '#root'
+      el: '#root',
+      history: createMemoryHistory()
     });
 
     sm.add({ name: 'app' });
