@@ -53,7 +53,7 @@ describe('States', function() {
 
   });
 
-  describe.only('params processing', function() {
+  describe('params processing', function() {
 
     let sm = new StateManager({
       el: document.body,
