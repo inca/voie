@@ -76,7 +76,7 @@ Vue.directive('link', {
     let ctx = manager.context;
     this.el.classList.remove(manager.activeClass);
     if (ctx.state) {
-      let paramsMatch = Object.keys(ctx.params)
+      let paramsMatch = Object.keys(this.params)
         .every(key => ctx.params[key] == this.params[key]);
       let active = ctx.state.includes(state) && paramsMatch;
       if (active) {
