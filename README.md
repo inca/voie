@@ -316,6 +316,96 @@ By "entering" we mean:
   * rendering Vue component, if any
   * preserving the original state of `<v-view>` so that it could later be restored
   
+### History
+
+A common need for any web application is to update browser URL upon navigating to
+a state with URL mapping, so that when the user presses "Refresh" application
+loads the most recent state (not the "start" screen).
+Decent SPAs would also have Back/Forward buttons working as expected.
+We refer to these features as "history support".
+
+Now there's two ways of implementing history support in your application:
+
+  * **hash** (uncool, but fairly simple) — state will be maintained using
+    hash portions of URL (e.g. `https://myapp/#user/1/transactions`)
+
+  * **HTML5** (cool, a bit more complex) — state sill be maintained using
+    pathname portion of URL (e.g. `https://myapp/user/1/transactions`)
+    
+HTML5 history requires server-side setup: server must reply with the same HTML
+wrapper to **all URLs** used by your application.
+
+#### HTML5 server setup example
+
+Here's an example [Express](http://expressjs.com) server:
+
+```es6
+import express from 'express';
+
+let app = express();
+
+// Allow using static resources with `/static` prefix
+app.use('/static', express.static('static'));
+
+// Serve application data with `/~` prefix
+app.use('/~', appDataRouter);
+
+// Serve SPA entry-point HTML to all other routes
+app.get('/*', (req, res) => res.sendFile('app.html'))
+```
+
+This example shows potential gotchas: 
+since `app.html` will be served for all GET requests, in order
+to serve other resources (e.g. static or compiled assets, scripts, 
+stylesheets, application data, etc.) you'll need separate prefixes.
+Without these prefixes it won't be easy to configure your front web server
+([nginx](http://nginx.org/en/) or Apache) for production.
+
+#### History setup
+
+Voie uses awesome [history](https://github.com/rackt/history) 
+to provide apps with history support. HTML5 mode is used by default.
+
+Here's how to switch to hash-history (you need to install `history`):
+
+```es6
+// app.js
+import { StateManager } from 'voie';
+import { createHashHistory } from 'history';
+
+export default new StateManager({
+  el: '#app',
+  history: createHashHistory()
+});
+```
+
+See [history docs](https://github.com/rackt/history/tree/master/docs)
+for more options.
+
+#### Base URL
+
+It's a bit easier to setup servers using "base" URL for your app, e.g.:
+
+```
+app.get('/app*', (req, res) => res.sendFile('app.html')) 
+```
+
+In this case all you need to do is to add `<base href="/app"/>`
+inside the `<head>` of your HTML wrapper.
+
+Or you can just specify `base` configuration parameter (it's only used
+when `history` is not present):
+
+```es6
+// app.js
+import { StateManager } from 'voie';
+
+export default new StateManager({
+  el: '#app',
+  base: '/app'
+});
+```
+
 ### More docs
 
 Voie is in active development, so more docs are coming soon.

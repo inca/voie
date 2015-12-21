@@ -66,17 +66,23 @@ Vue.directive('link', {
   },
 
   updateElement() {
-    let manager = this.manager;
     let state = this.state;
-    let currentState = manager.context.state;
-    let active = state && currentState && currentState.includes(state);
-    // TODO add option to strict match states
-    if (active) {
-      this.el.classList.add(manager.activeClass);
-    } else {
-      this.el.classList.remove(manager.activeClass);
+    if (!state) {
+      return;
     }
     this.el.setAttribute('href', state.createHref(this.params));
+    // Add active class
+    let manager = this.manager;
+    let ctx = manager.context;
+    this.el.classList.remove(manager.activeClass);
+    if (ctx.state) {
+      let paramsMatch = Object.keys(ctx.params)
+        .every(key => ctx.params[key] == this.params[key]);
+      let active = ctx.state.includes(state) && paramsMatch;
+      if (active) {
+        this.el.classList.add(manager.activeClass);
+      }
+    }
   }
 
 });
