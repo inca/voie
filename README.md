@@ -3,7 +3,10 @@
 **Voie** /vwa/ (fr. "way") is a simple router / layout manager for [Vue.js](http://vuejs.org).
 Use it to build SPAs of your dreams.
 
-Current status: **active development** — any feedback appreciated.
+Current status: **active development** — any feedback is appreciated.
+
+Simple example app is available on [GitHub](https://github.com/inca/voie-example)
+and [live on Netlify](http://voie-example.netlify.com/).
 
 ## Core concepts
 
