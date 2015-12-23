@@ -70,7 +70,7 @@ describe('States', function() {
     });
 
     it('should apply param defaults from spec', function() {
-      let params = sm.get('user').makeParams({
+      let params = sm.get('user')._makeParams({
         name: 'Alice',
         display: 'full'
       });
@@ -80,7 +80,7 @@ describe('States', function() {
     });
 
     it('should drop param not from spec', function() {
-      let params = sm.get('user').makeParams({
+      let params = sm.get('user')._makeParams({
         name: 'Alice',
         something: '?'
       });

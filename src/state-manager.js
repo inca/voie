@@ -139,15 +139,15 @@ export default class StateManager extends EventEmitter {
   }
 
   _matchLocation(location) {
-    let pathname = location.pathname;
-    if (pathname == this.context.pathname) {
+    let url = location.pathname + location.search;
+    if (url == this.context.url) {
       return;
     }
     let found = Object.keys(this.states).find(name => {
       let state = this.states[name];
-      let matched = state.match(pathname);
+      let matched = state._match(location);
       if (matched) {
-        debug('match url %s -> %s', pathname, name);
+        debug('match url %s -> %s', location.pathname, name);
         this.go({
           name: name,
           params: matched,
@@ -158,7 +158,7 @@ export default class StateManager extends EventEmitter {
     });
     if (!found) {
       /* eslint-disable no-console */
-      console.warn('No states match URL: ' + pathname);
+      console.warn('No states match URL: ' + location.pathname);
       /* eslint-enable no-console */
       this._updateHistory(true);
     }
@@ -166,18 +166,18 @@ export default class StateManager extends EventEmitter {
 
   _updateHistory(replace) {
     let state = this.context.state;
-    let pathname = state ? state.urlFormat(this.context.params) : '/';
-    if (pathname == this.context.pathname) {
+    let url = state ? state._makeUrl(this.context.params) : '/';
+    if (url == this.context.url) {
       return;
     }
-    this.context.pathname = pathname;
+    this.context.url = url;
     if (replace) {
-      this.history.replace(pathname);
+      this.history.replace(url);
     } else {
-      this.history.push(pathname);
+      this.history.push(url);
     }
     this.emit('history_updated', {
-      pathname: pathname,
+      url: url,
       ctx: this.context
     });
   }

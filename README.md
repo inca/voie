@@ -14,8 +14,6 @@ Unlike official [vue-router](https://github.com/vuejs/vue-router) which
 is organized around URLs, Voie is organized around _states_. Voie-based apps
 are basically [finite-state machines](https://en.wikipedia.org/wiki/Finite-state_machine).
 
-### State
-
 State is simply a _named_ logical "place" within your application. 
 
 Each state can _optionally_ have:
@@ -319,6 +317,57 @@ By "entering" we mean:
   * rendering Vue component, if any
   * preserving the original state of `<v-view>` so that it could later be restored
   
+### Parameters
+
+Each state has a specification of parameters it can accept when entered.
+Mandatory parameters (e.g. `userId` for state `user`) are classically specified 
+in pathname (e.g. `/user/28`).
+Optional parameters (e.g. `page`, `limit` for lists) are usually specified
+in querystring (e.g. `/users?page=5&limit=100`).
+
+Here's how you define both parameter types when registering states:
+
+```es6
+app.add('user', {
+  url: '/user/:userId',   // userId param is mandatory
+  params: {
+    section: null,        // these are optional
+    collapsed: false      // with optional default values
+  }
+});
+```
+
+Both querystring and pathname parameters are accessible in `ctx.params` object
+which is exposed both to `enter` hook and components.
+
+Example:
+
+```
+location.href = '/user/123?section=profile&collapsed=true';
+app.context.params
+// { userId: '123', section: 'profile', collapsed: 'true' }
+```
+
+**Note:** Voie doesn't do any type conversion on params, so they are returned as strings.
+
+When navigating between states specify parameters in `go` (or `v-link`):
+ 
+```es6
+app.go({
+  name: 'user',
+  params: {
+    userId: '123',
+    section: 'profile',
+    unknown: 'wut?'     // Important, this will be dropped!
+  }
+});
+```
+
+**Note:** params must be listed explicitly when registering states,
+all other parameters will be dropped. In the example above
+parameter `unknown` is not specified in `url` or `params` of `user` state (or its ancestors),
+so it's not part of `user` state spec and, therefore, will not be accessible in `ctx.params`.
+
 ### History
 
 A common need for any web application is to update browser URL upon navigating to

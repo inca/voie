@@ -1,5 +1,6 @@
 import { toVueComponent } from './utils';
 import pathToRegexp from 'path-to-regexp';
+import querystring from 'query-string';
 
 export default class State {
 
@@ -13,7 +14,6 @@ export default class State {
     this._setupParams(spec);
     this._setupOptions(spec);
   }
-
 
   _setupName(spec) {
     this.name = spec.name;
@@ -56,15 +56,15 @@ export default class State {
     if (!this.fullUrl) {
       this.fullUrl = '/';
     }
-    this.urlParams = [];
-    this.urlRegex = pathToRegexp(this.fullUrl, this.urlParams);
-    this.urlFormat = pathToRegexp.compile(this.fullUrl);
+    this._urlParams = [];
+    this._urlRegex = pathToRegexp(this.fullUrl, this._urlParams);
+    this._urlFormat = pathToRegexp.compile(this.fullUrl);
   }
 
   _setupParams(spec) {
-    this.paramsSpec = Object.assign({}, spec.params);
-    this.urlParams.forEach(param => {
-      this.paramsSpec[param.name] = null;
+    this._paramsSpec = Object.assign({}, spec.params);
+    this._urlParams.forEach(param => {
+      this._paramsSpec[param.name] = null;
     });
   }
 
@@ -99,38 +99,92 @@ export default class State {
   }
 
   /**
-   * Attempts to match `pathname` to this state's URL pattern.
+   * Attempts to match `location` to this state's URL pattern.
    *
-   * @param {string} pathname
+   * @param {{ pathname, search }} location
    * @returns an object with extracted params or `null` if don't match.
+   * @private
    */
-  match(pathname) {
-    let result = this.urlRegex.exec(pathname);
-    if (!result) {
+  _match(location) {
+    let matched = this._urlRegex.exec(location.pathname);
+    if (!matched) {
       return null;
     }
-    return this.urlParams.reduce((params, p, i) => {
-      params[p.name] = result[i + 1];
+    let params = this._urlParams.reduce((params, p, i) => {
+      params[p.name] = matched[i + 1];
       return params;
     }, {});
+    try {
+      let query = querystring.parse(location.search);
+      Object.assign(params, query);
+    } catch (e) {}
+    return params;
   }
 
   /**
    * Constructs a `params` object by dropping any parameters
-   * not specified in `paramsSpec` of this state.
-   * Values from `paramsSpec` act as defaults.
+   * not specified in `_paramsSpec` of this state.
+   * Values from `_paramsSpec` act as defaults.
    *
    * @param {object} params
+   * @private
    */
-  makeParams(params) {
-    return Object.keys(this.paramsSpec).reduce((result, name) => {
-      result[name] = name in params ? params[name] : this.paramsSpec[name];
+  _makeParams(params) {
+    return Object.keys(this._paramsSpec).reduce((result, name) => {
+      result[name] = name in params ? params[name] : this._paramsSpec[name];
       return result;
     }, {});
   }
 
+  /**
+   * Constructs search string by serializing query params.
+   *
+   * @param params
+   * @return {string} search
+   * @private
+   */
+  _makeSearch(params) {
+    let query = Object.keys(params).reduce((query, key) => {
+      var value = params[key];
+      if (value != null) {
+        query[key] = value;
+      }
+      return query;
+    }, {});
+    this._urlParams.forEach(p => {
+      delete query[p.name];
+    });
+    try {
+      let search = querystring.stringify(query);
+      if (search) {
+        return '?' + search;
+      }
+    } catch (e) {}
+    return '';
+  }
+
+  /**
+   * Constructs an URL by encoding `params` into URL pattern and query string.
+   *
+   * Note: params not mentioned in `_paramsSpec` are dropped.
+   *
+   * @param params
+   * @return {string} url
+   * @private
+   */
+  _makeUrl(params) {
+    return this._urlFormat(params) + this._makeSearch(params);
+  }
+
+  /**
+   * Creates href suitable for links (taking into account base URL and
+   * hash-based histories).
+   *
+   * @param params
+   * @return {string} href
+   */
   createHref(params) {
-    return this.manager.history.createHref(this.urlFormat(params));
+    return this.manager.history.createHref(this._makeUrl(params));
   }
 
 };

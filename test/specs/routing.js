@@ -28,37 +28,37 @@ describe('URL routing', function() {
 
   it('should register named URL params', function() {
     let sm = createStateManager();
-    assert.lengthOf(sm.get('users').urlParams, 0);
-    assert.lengthOf(sm.get('user').urlParams, 1);
-    assert.equal(sm.get('user').urlParams[0].name, 'userName');
+    assert.lengthOf(sm.get('users')._urlParams, 0);
+    assert.lengthOf(sm.get('user')._urlParams, 1);
+    assert.equal(sm.get('user')._urlParams[0].name, 'userName');
   });
 
   it('should match simple URLs', function() {
     let sm = createStateManager();
-    assert.ok(sm.get('app').match('/'));
-    assert.ok(sm.get('app').match(''));
-    assert.notOk(sm.get('app').match('/users'));
-    assert.ok(sm.get('users').match('/users'));
-    assert.ok(sm.get('users').match('/users/'));
-    assert.notOk(sm.get('users').match('/users/list'));
+    assert.ok(sm.get('app')._match({ pathname: '/' }));
+    assert.ok(sm.get('app')._match({ pathname: '' }));
+    assert.notOk(sm.get('app')._match({ pathname: '/users' }));
+    assert.ok(sm.get('users')._match({ pathname: '/users' }));
+    assert.ok(sm.get('users')._match({ pathname: '/users/' }));
+    assert.notOk(sm.get('users')._match({ pathname: '/users/list' }));
   });
 
   it('should match URLs with parameters', function() {
     let sm = createStateManager();
-    assert.notOk(sm.get('user').match('/user/'));
-    assert.ok(sm.get('user').match('/user/Jane'));
+    assert.notOk(sm.get('user')._match({ pathname: '/user/' }));
+    assert.ok(sm.get('user')._match({ pathname: '/user/Jane' }));
   });
 
   it('should extract named params from URL', function() {
     let sm = createStateManager();
     let st = sm.get('user.messages');
-    assert.equal(st.match('/user/Alice/messages').userName, 'Alice');
+    assert.equal(st._match({ pathname: '/user/Alice/messages' }).userName, 'Alice');
   });
 
   it('should format URLs with parameters', function() {
     let sm = createStateManager();
     let st = sm.get('user.messages');
-    assert.equal(st.urlFormat({ userName: 'Alice' }), '/user/Alice/messages');
+    assert.equal(st._urlFormat({ userName: 'Alice' }), '/user/Alice/messages');
   });
 
   it('should visit root state automatically after start', function(done) {

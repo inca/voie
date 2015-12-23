@@ -94,7 +94,7 @@ export default class Transition {
     let nextContext = {
       parent: prevCtx,
       state: nextState,
-      params: Object.assign({}, prevCtx.params, nextState.makeParams(this.params)),
+      params: Object.assign({}, prevCtx.params, nextState._makeParams(this.params)),
       data: Object.assign({}, prevCtx.data)
     };
     return Promise.resolve()
