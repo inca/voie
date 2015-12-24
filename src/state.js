@@ -10,7 +10,7 @@ export default class State {
     this._setupHierarchy(spec);
     this._setupComponent(spec);
     this._setupHooks(spec);
-    this._setupUrl(spec);
+    this._setupPath(spec);
     this._setupParams(spec);
     this._setupOptions(spec);
   }
@@ -45,25 +45,31 @@ export default class State {
     }
   }
 
-  _setupUrl(spec) {
-    this.url = spec.url || '';
-    if (this.url.indexOf('/') == 0) {
-      this.fullUrl = this.url;
+  _setupPath(spec) {
+    if (!spec.path && spec.url) {
+      /* eslint-disable no-console */
+      console.warn('state.url is deprecated; use state.path instead');
+      /* eslint-enable no-console */
+      spec.path = spec.url;
+    }
+    this.path = spec.path || '';
+    if (this.path.indexOf('/') == 0) {
+      this.fullPath = this.path;
     } else {
-      let parentUrl = this.parentState ? this.parentState.fullUrl : '/';
-      this.fullUrl = parentUrl.replace(/\/+$/, '') + (this.url ? '/' + this.url : '');
+      let parentPath = this.parentState ? this.parentState.fullPath : '/';
+      this.fullPath = parentPath.replace(/\/+$/, '') + (this.path ? '/' + this.path : '');
     }
-    if (!this.fullUrl) {
-      this.fullUrl = '/';
+    if (!this.fullPath) {
+      this.fullPath = '/';
     }
-    this._urlParams = [];
-    this._urlRegex = pathToRegexp(this.fullUrl, this._urlParams);
-    this._urlFormat = pathToRegexp.compile(this.fullUrl);
+    this._pathParams = [];
+    this._pathRegex = pathToRegexp(this.fullPath, this._pathParams);
+    this._pathFormat = pathToRegexp.compile(this.fullPath);
   }
 
   _setupParams(spec) {
     this._paramsSpec = Object.assign({}, spec.params);
-    this._urlParams.forEach(param => {
+    this._pathParams.forEach(param => {
       this._paramsSpec[param.name] = null;
     });
   }
@@ -99,18 +105,18 @@ export default class State {
   }
 
   /**
-   * Attempts to match `location` to this state's URL pattern.
+   * Attempts to match `location` to this state's `path` pattern.
    *
    * @param {{ pathname, search }} location
    * @returns an object with extracted params or `null` if don't match.
    * @private
    */
   _match(location) {
-    let matched = this._urlRegex.exec(location.pathname);
+    let matched = this._pathRegex.exec(location.pathname);
     if (!matched) {
       return null;
     }
-    let params = this._urlParams.reduce((params, p, i) => {
+    let params = this._pathParams.reduce((params, p, i) => {
       params[p.name] = matched[i + 1];
       return params;
     }, {});
@@ -151,7 +157,7 @@ export default class State {
       }
       return query;
     }, {});
-    this._urlParams.forEach(p => {
+    this._pathParams.forEach(p => {
       delete query[p.name];
     });
     try {
@@ -173,7 +179,7 @@ export default class State {
    * @private
    */
   _makeUrl(params) {
-    return this._urlFormat(params) + this._makeSearch(params);
+    return this._pathFormat(params) + this._makeSearch(params);
   }
 
   /**

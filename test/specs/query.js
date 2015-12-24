@@ -94,7 +94,7 @@ describe('Query support', function() {
     sm.add({
       name: 'user',
       redirect: 'user.info',
-      url: '/user/:userName',
+      path: '/user/:userName',
       params: {
         collapsed: false,
         tags: []

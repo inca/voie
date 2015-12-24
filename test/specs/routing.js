@@ -18,19 +18,19 @@ describe('URL routing', function() {
 
   it('should register URL patterns', function() {
     let sm = createStateManager();
-    assert.equal(sm.get('app').fullUrl, '/');
-    assert.equal(sm.get('users').fullUrl, '/users');
-    assert.equal(sm.get('users.list').fullUrl, '/users/list');
-    assert.equal(sm.get('user').fullUrl, '/user/:userName');
-    assert.equal(sm.get('user.dashboard').fullUrl, '/user/:userName');
-    assert.equal(sm.get('user.messages').fullUrl, '/user/:userName/messages');
+    assert.equal(sm.get('app').fullPath, '/');
+    assert.equal(sm.get('users').fullPath, '/users');
+    assert.equal(sm.get('users.list').fullPath, '/users/list');
+    assert.equal(sm.get('user').fullPath, '/user/:userName');
+    assert.equal(sm.get('user.dashboard').fullPath, '/user/:userName');
+    assert.equal(sm.get('user.messages').fullPath, '/user/:userName/messages');
   });
 
   it('should register named URL params', function() {
     let sm = createStateManager();
-    assert.lengthOf(sm.get('users')._urlParams, 0);
-    assert.lengthOf(sm.get('user')._urlParams, 1);
-    assert.equal(sm.get('user')._urlParams[0].name, 'userName');
+    assert.lengthOf(sm.get('users')._pathParams, 0);
+    assert.lengthOf(sm.get('user')._pathParams, 1);
+    assert.equal(sm.get('user')._pathParams[0].name, 'userName');
   });
 
   it('should match simple URLs', function() {
@@ -58,7 +58,7 @@ describe('URL routing', function() {
   it('should format URLs with parameters', function() {
     let sm = createStateManager();
     let st = sm.get('user.messages');
-    assert.equal(st._urlFormat({ userName: 'Alice' }), '/user/Alice/messages');
+    assert.equal(st._pathFormat({ userName: 'Alice' }), '/user/Alice/messages');
   });
 
   it('should visit root state automatically after start', function(done) {
@@ -125,21 +125,21 @@ describe('URL routing', function() {
 
     sm.add({
       name: 'users',
-      url: '/users',
+      path: '/users',
       parent: 'app',
       redirect: 'users.list'
     });
 
     sm.add({
       name: 'users.list',
-      url: 'list'
+      path: 'list'
     });
 
     sm.add({
       name: 'user',
       parent: 'users',
       redirect: 'user.dashboard',
-      url: '/user/:userName'
+      path: '/user/:userName'
     });
 
     sm.add({
@@ -148,7 +148,7 @@ describe('URL routing', function() {
 
     sm.add({
       name: 'user.messages',
-      url: 'messages'
+      path: 'messages'
     });
 
     return sm;

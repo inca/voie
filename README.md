@@ -31,7 +31,7 @@ Consider this example:
 
 ```es6
 app.add('user', {
-  url: '/user/:userId',
+  path: '/user/:userId',
   redirect: 'user.dashboard',   // specify "default" sub-state
   enter: (ctx) => {             // can return a Promise
     return fetch('/user/' + ctx.params.userId)
@@ -270,6 +270,7 @@ Example:
 ```es6
 {
   enter: (ctx) => UserService.findByEmail(ctx.params.email)
+    .then(user => ctx.data.user = user)
 }
 ```
 
@@ -329,7 +330,7 @@ Here's how you define both parameter types when registering states:
 
 ```es6
 app.add('user', {
-  url: '/user/:userId',   // userId param is mandatory
+  path: '/user/:userId',   // userId param is mandatory
   params: {
     section: null,        // these are optional
     collapsed: false      // with optional default values
@@ -365,7 +366,7 @@ app.go({
 
 **Note:** params must be listed explicitly when registering states,
 all other parameters will be dropped. In the example above
-parameter `unknown` is not specified in `url` or `params` of `user` state (or its ancestors),
+parameter `unknown` is not specified in `path` or `params` of `user` state (or its ancestors),
 so it's not part of `user` state spec and, therefore, will not be accessible in `ctx.params`.
 
 ### History
@@ -381,7 +382,7 @@ Now there's two ways of implementing history support in your application:
   * **hash** (uncool, but fairly simple) — state will be maintained using
     hash portions of URL (e.g. `https://myapp/#user/1/transactions`)
 
-  * **HTML5** (cool, a bit more complex) — state sill be maintained using
+  * **HTML5** (cool, a bit more complex) — state will be maintained using
     pathname portion of URL (e.g. `https://myapp/user/1/transactions`)
     
 HTML5 history requires server-side setup: server must reply with the same HTML
