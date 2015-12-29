@@ -63,7 +63,12 @@ export default class StateManager extends EventEmitter {
       params: {},
       data: {}
     };
-    this.mountPoints = {};
+    this.mountPoints = {
+      '': {
+        viewEl: this.el,
+        viewElChildren: [].slice.call(this.el.children)
+      }
+    };
   }
 
   handleUncaught(err) {
@@ -116,7 +121,11 @@ export default class StateManager extends EventEmitter {
     let ctx = this.context;
     while (ctx && !el) {
       let state = ctx.state;
-      el = state ? this.mountPoints[state.name] : this.el;
+      if (state) {
+        el = this.mountPoints[state.name];
+      } else {
+        el = this.mountPoints[''];
+      }
       ctx = ctx.parent;
     }
     return el;

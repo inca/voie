@@ -24,7 +24,8 @@ export default class State {
 
   _setupHierarchy(spec) {
     this.parentState = this.manager.get(spec.parent || this.name.split('.').slice(0, -1).join('.')) || null;
-    this.lineage = this.parentState ? this.parentState.lineage.concat([this]) : [this];
+    this.lineage = this.parentState ?
+      this.parentState.lineage.concat([this]) : [this];
   }
 
   _setupComponent(spec) {
@@ -57,7 +58,8 @@ export default class State {
       this.fullPath = this.path;
     } else {
       let parentPath = this.parentState ? this.parentState.fullPath : '/';
-      this.fullPath = parentPath.replace(/\/+$/, '') + (this.path ? '/' + this.path : '');
+      this.fullPath = parentPath.replace(/\/+$/, '') +
+        (this.path ? '/' + this.path : '');
     }
     if (!this.fullPath) {
       this.fullPath = '/';
@@ -100,7 +102,8 @@ export default class State {
    * @return {boolean}
    */
   includes(stateOrName) {
-    let state = stateOrName instanceof State ? stateOrName : this.manager.get(stateOrName);
+    let state = stateOrName instanceof State ?
+      stateOrName : this.manager.get(stateOrName);
     return this.lineage.indexOf(state) > -1;
   }
 

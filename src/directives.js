@@ -7,7 +7,11 @@ Vue.elementDirective('v-view', {
 
   bind() {
     let { state, manager } = this.vm.$options;
-    manager.mountPoints[state.name] = this.el;
+    manager.mountPoints[state.name] = {
+      hostVm: this.vm,
+      viewEl: this.el,
+      viewElChildren: [].slice.call(this.el.children)
+    };
     debug('registered v-view', this.el);
   },
 

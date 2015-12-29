@@ -72,11 +72,14 @@ export default class Transition {
 
   cleanup(ctx) {
     if (ctx.vm) {
+      // Destroy vm and restore v-view element
       let el = ctx.vm.$el;
+      let mp = ctx.mountPoint;
       ctx.vm.$destroy();
-      if (ctx.mountPoint) {
-        el.parentNode.replaceChild(ctx.mountPoint, el);
-        ctx._mountPointChildren.forEach(el => ctx.mountPoint.appendChild(el));
+      if (mp) {
+        let viewEl = ctx.mountPoint.viewEl;
+        el.parentNode.replaceChild(viewEl, el);
+        mp.viewElChildren.forEach(el => viewEl.appendChild(el));
       }
     }
     this.manager.context = ctx.parent;
@@ -127,11 +130,10 @@ export default class Transition {
     let Comp = toVueComponent(comp);
     let mp = this.manager._getMountPoint();
     ctx.mountPoint = mp;
-    // Preserve mount point children, b/c they are destroyed by Vue
-    ctx._mountPointChildren = [].slice.call(mp.children);
     ctx.vm = new Comp({
       data: ctx.data,
-      el: mp,
+      el: mp.viewEl,
+      parent: mp.hostVm,
       params: ctx.params,
       ctx: ctx,
       state: state,
