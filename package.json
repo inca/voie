@@ -7,9 +7,6 @@
     "url": "https://github.com/inca/voie"
   },
   "main": "lib/index.js",
-  "browser": {
-    "lib/index.js": "src/index.js"
-  },
   "dependencies": {
     "debug": "^2.2.0",
     "eventemitter3": "^1.1.1",
@@ -51,23 +48,6 @@
   "pre-commit": [
     "check"
   ],
-  "babel": {
-    "presets": [
-      "es2015"
-    ]
-  },
-  "browserify": {
-    "transform": [
-      [
-        "babelify",
-        {
-          "presets": [
-            "es2015"
-          ]
-        }
-      ]
-    ]
-  },
   "keywords": [
     "vue",
     "router",
