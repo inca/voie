@@ -1,4 +1,3 @@
-import { toVueComponent } from './utils';
 import pathToRegexp from 'path-to-regexp';
 import querystring from 'query-string';
 
@@ -30,7 +29,10 @@ export default class State {
 
   _setupComponent(spec) {
     if (spec.component) {
-      this.component = toVueComponent(spec.component);
+      this.component = spec.component;
+      if (!this.component.name) {
+        this.component.name = this.name.replace(/\./g, '-');
+      }
     }
   }
 
