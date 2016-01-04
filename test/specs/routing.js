@@ -68,7 +68,7 @@ describe('URL routing', function() {
         assert.equal(sm.context.state.name, 'users.list');
       })
       .then(() => sm.stop())
-      .then(done);
+      .then(done, done);
   });
 
   it('should update URL after start', function(done) {
@@ -78,7 +78,7 @@ describe('URL routing', function() {
         assert.equal(location.hash, '#/users/list');
       })
       .then(() => sm.stop())
-      .then(done);
+      .then(done, done);
   });
 
   it('should update URL after visiting another state', function(done) {
@@ -89,7 +89,7 @@ describe('URL routing', function() {
         assert.equal(location.hash, '#/user/Alice/messages');
       })
       .then(() => sm.stop())
-      .then(done);
+      .then(done, done);
   });
 
   it('should update URL after visiting same state with different params', function(done) {
@@ -106,7 +106,7 @@ describe('URL routing', function() {
         assert.equal(location.hash, '#/user/Bob');
       })
       .then(() => sm.stop())
-      .then(done);
+      .then(done, done);
   });
 
   function createStateManager() {

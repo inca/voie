@@ -9,12 +9,17 @@ export default class Transition {
   constructor(manager, spec) {
     this.manager = manager;
     this.redirectsCount = 0;
+    let currentState = manager.context.state;
     let dstStateName;
     if (typeof spec === 'string') {
       dstStateName = spec;
       spec = {};
-    } else {
+    } else if (spec.name) {
       dstStateName = spec.name;
+    } else if (currentState) {
+      dstStateName = currentState.name;
+    } else {
+      throw new Error('Destination state not specified');
     }
     debug('go to %s', dstStateName);
     this.resolveDstState(dstStateName);

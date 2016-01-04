@@ -45,9 +45,8 @@ describe('Transitions', function() {
         assert.notInclude(left, 'groups.list');
         assert.include(entered, 'groups');
         assert.include(entered, 'groups.list');
-        done();
       })
-      .catch(done);
+      .then(done, done);
   });
 
   it('should allow visiting redirect-only states', function(done) {
@@ -55,9 +54,8 @@ describe('Transitions', function() {
     sm.go('users')
       .then(() => {
         assert.equal(sm.context.state.name, 'users.list');
-        done();
       })
-      .catch(done);
+      .then(done, done);
   });
 
   it('should load state data and render component in layout hierarchy', function(done) {
@@ -67,9 +65,8 @@ describe('Transitions', function() {
         assert.equal(document.querySelector('#root h1').innerText, 'Users');
         assert.lengthOf(document.querySelectorAll('#root li'), 3);
         assert.equal(document.querySelector('#root li:first-child').innerText, 'Alice');
-        done();
       })
-      .catch(done);
+      .then(done, done);
   });
 
   it('should dispose of stale components and render new data', function(done) {
@@ -80,9 +77,8 @@ describe('Transitions', function() {
         assert.lengthOf(document.querySelectorAll('#root h1'), 0);
         assert.lengthOf(document.querySelectorAll('#root li'), 2);
         assert.equal(document.querySelector('#root li:first-child').innerText, 'Admins');
-        done();
       })
-      .catch(done);
+      .then(done, done);
   });
 
   it('should support redirect via state.enter hook', function(done) {
@@ -91,9 +87,8 @@ describe('Transitions', function() {
     sm.go('groups')
       .then(() => {
         assert.equal(sm.context.state.name, 'users.list');
-        done();
       })
-      .catch(done);
+      .then(done, done);
   });
 
   it('should support rendering component via state.enter hook', function(done) {
@@ -104,9 +99,8 @@ describe('Transitions', function() {
     sm.go('groups')
       .then(() => {
         assert.equal(document.querySelector('h2#root').innerText, 'Groups');
-        done();
       })
-      .catch(done);
+      .then(done, done);
   });
 
   it('should detect redirect loops', function(done) {
@@ -134,9 +128,8 @@ describe('Transitions', function() {
       .then(() => {
         assert.ok(handled);
         assert.equal(handled.message, 'oopsie');
-        done();
       })
-      .catch(done);
+      .then(done, done);
   });
 
   it('should allow redirecting on errors', function(done) {
@@ -152,9 +145,8 @@ describe('Transitions', function() {
     sm.go('users.list')
       .then(() => {
         assert.equal(sm.context.state.name, 'groups.list');
-        done();
       })
-      .catch(done);
+      .then(done, done);
   });
 
   it('should render custom components on errors', function(done) {
@@ -170,9 +162,8 @@ describe('Transitions', function() {
     sm.go('users.list')
       .then(() => {
         assert.equal(document.querySelector('#root h2').innerText, 'Error');
-        done();
       })
-      .catch(done);
+      .then(done, done);
   });
 
   function createStateManager() {

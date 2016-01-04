@@ -9,8 +9,52 @@ import Transition from './transition';
 import { createHistory, useBasename} from 'history';
 import './directives';
 
+/**
+ * State manager holds the hierarchy of application states,
+ * exposes methods for navigating around states and
+ * keeps track of current state and its `context`
+ * (object `{ state, params, data, ... }`).
+ *
+ * A typical application will have a single instance
+ * of state manager exposed as a module.
+ *
+ * ```es6
+ * import { StateManager } from 'voie';
+ *
+ * export default new StateManager({ ... });
+ * ```
+ *
+ * State manager emits following events:
+ *
+ *   * `history_updated`
+ *   * `transition_finished`
+ *
+ */
 export default class StateManager extends EventEmitter {
 
+  /**
+   * Instantiates new state manager.
+   *
+   * Options:
+   *
+   *   * `el` — required, root DOM element for rendering views
+   *     (can be either `HTMLElement` or selector string)
+   *
+   *   * history — a history object (see `rackt/history`)
+   *
+   *   * base — (only used when `history` is not specified), base href
+   *     for application (URL pathname prefix)
+   *
+   *   * `maxRedirects` — maximum number of redirects within
+   *     a single transition, when exceeded transition will fail with
+   *     `RedirectLoopError` (default is 10)
+   *
+   *   * `activeClass` — active class for `v-link` directive
+   *     (default is "active")'
+   *
+   *   * `handleUncaught` — `function(err) => Promise` invoked
+   *     when transition fails with error
+   */
   constructor(spec) {
     super();
     this._setupEl(spec);
@@ -69,12 +113,33 @@ export default class StateManager extends EventEmitter {
         viewElChildren: [].slice.call(this.el.children)
       }
     };
+    this.transition = null;
   }
 
+  /**
+   * Handles errors uncaught during transition.
+   * Used for overriding on a per-instance basis.
+   *
+   * @returns {Promise}
+   */
   handleUncaught(err) {
     return Promise.reject(err);
   }
 
+  /**
+   * Registers a new state with specified `name`.
+   *
+   * You can use one of two styles:
+   *
+   * ```es6
+   * sm.add('foo', { ... });
+   * sm.add({ name: 'foo', ... });
+   * ```
+   *
+   * All options are passed to `State` constructor.
+   *
+   * @returns {State}
+   */
   add(name, spec) {
     if (typeof name == 'object') {
       spec = name;
@@ -93,10 +158,48 @@ export default class StateManager extends EventEmitter {
     return state;
   }
 
+  /**
+   * Retrieves a state previously registered via `add`.
+   *
+   * @returns {State}
+   */
   get(name) {
     return this.states[name];
   }
 
+  /**
+   * Navigates to a state with specified `name`.
+   * Navigation is performed asynchronously, allowing
+   * state enter/leave hook to perform async tasks
+   * (e.g. fetch data).
+   *
+   * Throws an exception if another transition is
+   * taking place.
+   *
+   * Options:
+   *
+   *   * `name` — target state name (if null, will transition to same state
+   *     with updated params)
+   *   * `params` — object containing state parameters
+   *     (either path variables or query string parameters)
+   *   * `replace` — if `true` don't create a separate record
+   *     in browser history (default is `false`)
+   *
+   * Transition process:
+   *
+   *   * find nearest common ancestor state with matching parameters
+   *   * go "upstream", leaving states, cleaning up states,
+   *     destroying components
+   *   * go "downstream", entering states, instantiating and rendering
+   *     components
+   *   * update browser history to reflect target state
+   *     (e.g. set new URL in address bar)
+   *
+   *  Note that it is the responsibility of the state to compute
+   *  target URL.
+   *
+   *  @returns {Promise} resolved when navigation is finished.
+   */
   go(options) {
     if (this.transition) {
       throw new Error('Transition is in progress. Abort it before going elsewhere.')
@@ -104,18 +207,38 @@ export default class StateManager extends EventEmitter {
     this.transition = new Transition(this, options);
     return this.transition.run()
       .then(result => {
-        delete this.transition;
+        this.transition = null;
         this.emit('transition_finished');
         return result;
       })
       .catch(err => {
-        delete this.transition;
+        this.transition = null;
         this.emit('transition_finished', err);
         return this.handleUncaught(err);
       })
       .then(() => this._updateHistory(options.replace || false));
   }
 
+  /**
+   * Updates browser history without actually performing
+   * any transitions.
+   *
+   * Typically used to serialize parameters into query string
+   * without performing navigation (e.g. when params are used
+   * only in Vue components).
+   */
+  update(params, replace) {
+    Object.assign(this.context.params, params);
+    return Promise.resolve()
+      .then(() => this._updateHistory(replace));
+  }
+
+  /**
+   * Resolves nearest mount point in current context tree.
+   *
+   * Mount point is a "slot" that corresponds to `v-view` directive
+   * (and the component that hosts it).
+   */
   _getMountPoint() {
     let el = null;
     let ctx = this.context;
@@ -131,6 +254,12 @@ export default class StateManager extends EventEmitter {
     return el;
   }
 
+  /**
+   * Begins listening for history events (e.g. browser back button)
+   * and performs initial navigation by matching current URL.
+   *
+   * @returns {Promise} resolved when initial navigation is finished.
+   */
   start() {
     if (this._unlisten) {
       return Promise.resolve();
@@ -139,6 +268,9 @@ export default class StateManager extends EventEmitter {
     return new Promise(resolve => this.once('history_updated', resolve));
   }
 
+  /**
+   * Stops listening for history events.
+   */
   stop() {
     if (!this._unlisten) {
       return;

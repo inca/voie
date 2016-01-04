@@ -35,8 +35,7 @@ describe('Query support', function() {
       }
     }).then(() => {
       assert.equal(sm.context.url, '/user/Alice?collapsed=false');
-      done();
-    });
+    }).then(done, done);
   });
 
   it('should override both inherited and own params', function(done) {
@@ -50,8 +49,7 @@ describe('Query support', function() {
       }
     }).then(() => {
       assert.equal(sm.context.url, '/user/Alice?collapsed=true&section=some');
-      done();
-    });
+    }).then(done, done);
   });
 
   it('should drop nulls in query params', function(done) {
@@ -65,8 +63,7 @@ describe('Query support', function() {
       }
     }).then(() => {
       assert.equal(sm.context.url, '/user/Alice');
-      done();
-    });
+    }).then(done, done);
   });
 
   it('should parse query params from location', function(done) {
@@ -79,7 +76,21 @@ describe('Query support', function() {
       assert.lengthOf(ctx.params.tags, 2);
     })
       .then(() => sm.stop())
-      .then(done);
+      .then(done, done);
+  });
+
+  it('should update history', function(done) {
+    let sm = createStateManager();
+    sm.go({
+      name: 'user',
+      params: {
+        userName: 'Alice'
+      }
+    }).then(() => sm.update({ collapsed: true }))
+      .then(() => {
+        assert.equal(location.hash, '#/user/Alice?collapsed=true')
+      })
+      .then(done, done);
   });
 
   function createStateManager() {

@@ -1,8 +1,68 @@
 import pathToRegexp from 'path-to-regexp';
 import querystring from 'query-string';
 
+/**
+ * Represents a node in application states hierarchy.
+ *
+ * Most state features are optional, the only required
+ * setting is a unique `name` and a reference to `parent` state.
+ *
+ * Depending on features a state can represent:
+ *
+ *   * an abstract view (e.g. layout containing a component with `<v-view>`
+ *     directive)
+ *   * a concrete view
+ *   * a route with path pattern and query parameters
+ *   * a data resolver that provides data to its descendants
+ *   * a mix of above
+ *
+ * Invoking constructor directly is not recommended,
+ * use `StateManager#add` instead.
+ *
+ * @private
+ */
 export default class State {
 
+  /**
+   * Options:
+   *
+   *   * `name` — required, state name; if contains dots `.`
+   *     then parent state will be inferred from this name
+   *     (e.g. `layout.users` will become a parent of `layout.users.list`)
+   *     unless `parent` is specified explicitly
+   *
+   *   * `parent` — optional, parent state (this option disables
+   *     parent-from-name inference)
+   *
+   *   * `path` — optional pathname pattern for matching URLs and
+   *     extracting parameters (e.g. `/user/:userId`). If started with `/`,
+   *     then path is treated as an absolute pathname, otherwise
+   *     path is treated as a fragment (absolute pathname is inherited
+   *     from parent)
+   *
+   *   * `params` — optional object that specifies default values for
+   *     additional params that this state accepts; these params
+   *     will be encoded into query string
+   *
+   *   * `component` — optional Vue component to be rendered
+   *     when entering this state
+   *
+   *   * `redirect` — optional state name to redirect when navigating
+   *     to this state; typically used in "abstract" states (e.g. layouts,
+   *     data-preparation, etc.) to specify default sub-state
+   *
+   *   * `enter` — optional `function(ctx) => Promise` hook invoked
+   *     when transitioning into this state or its descendants
+   *
+   *   * `leave` — optional `function(ctx) => Promise` hook invoked
+   *     when transitioning from this state or its descendants
+   *
+   *   * `handleError` — optional `function(err, ctx) => Promise` invoked
+   *     when error occurs during transition into/over this state
+   *
+   * @param manager
+   * @param spec
+   */
   constructor(manager, spec) {
     this.manager = manager;
     this._setupName(spec);
@@ -84,15 +144,53 @@ export default class State {
     }
   }
 
-  enter() {
+  /**
+   * Invoked when going "downstream" (either into this state or
+   * through this state to one of its descendants).
+   *
+   * Primary usage is to process `ctx.params` and populate `ctx.data`.
+   *
+   * Can redirect to another state by resolving `{ redirect: anotherStateName }`
+   * (e.g. for authentication).
+   *
+   * It is also possible to render a custom Vue component instead
+   * by resolving `{ component: customVueComponent }`.
+   *
+   * @param ctx — object `{ state, params, data }`
+   * @returns {Promise}
+   */
+  enter(ctx) {
     return Promise.resolve();
   }
 
-  leave() {
+  /**
+   * Invoked when going "upstream" (either from this state or
+   * through this state from one of its descendants).
+   * Typically used from cleaning up stuff used by this state.
+   *
+   * Like with `enter`, it is possible to redirect to another state
+   * by resolving `{ redirect: anotherStateName }`.
+   *
+   * @param ctx — object `{ state, params, data }`
+   * @returns {Promise}
+   */
+  leave(ctx) {
     return Promise.resolve();
   }
 
-  handleError(err) {
+  /**
+   * Invoked when error occurs during entering this state.
+   *
+   * Can redirect to another state by resolving `{ redirect: anotherStateName }`
+   * (e.g. for authentication).
+   *
+   * It is also possible to render a custom Vue component instead
+   * by resolving `{ component: customVueComponent }`.
+   *
+   * @param ctx — object `{ state, params, data }`
+   * @returns {Promise}
+   */
+  handleError(err, ctx) {
     return Promise.reject(err);
   }
 
