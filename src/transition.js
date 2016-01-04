@@ -23,7 +23,7 @@ export default class Transition {
     }
     debug('go to %s', dstStateName);
     this.resolveDstState(dstStateName);
-    this.params = spec.params || {};
+    this.params = Object.assign({}, manager.context.params, spec.params);
   }
 
   resolveDstState(name, isRedirect) {
@@ -88,7 +88,7 @@ export default class Transition {
       }
     }
     this.manager.context = ctx.parent;
-    this.manager.emit('state_changed', this.manager.context);
+    this.manager.emit('context_updated', this.manager.context);
   }
 
   goDownstream() {
@@ -117,9 +117,9 @@ export default class Transition {
           return this.run();
         }
         this.manager.context = nextContext;
+        this.manager.emit('context_updated', this.manager.context);
         // hooks can also return { component: <VueComponent> }
         this.render(nextContext, obj.component);
-        this.manager.emit('state_changed', this.manager.context);
         if (nextState != this.dstState) {
           return this.goDownstream();
         }

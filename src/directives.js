@@ -28,28 +28,28 @@ Vue.directive('link', {
   bind() {
     this.manager = resolveManager(this.vm);
     if (!this.manager) {
-      throw new Error('Can\'t find state manager.')
+      throw new Error('Can\'t locate state manager.')
     }
-    this.manager.on('state_changed', this.updateElement, this);
+    this.manager.on('context_updated', this.updateElement, this);
   },
 
   unbind() {
-    this.manager.off('state_changed', this.updateElement, this);
+    this.manager.off('context_updated', this.updateElement, this);
   },
 
   update(value) {
-    let manager = this.manager;
-    let name = null;
-    this.params = Object.assign({}, manager.context.params);
     if (!value) {
       throw new Error('v-link: expression "' +
         this.expression + '" should resolve to { name: ..., params... }}')
     }
+    let manager = this.manager;
+    let name = null;
     if (typeof value == 'string') {
       name = value;
+      this.params = {};
     } else {
-      Object.assign(this.params, value.params || {});
       name = value.name;
+      this.params = value.params || {};
     }
     this.state = manager.get(name);
     if (!this.state) {
@@ -70,21 +70,24 @@ Vue.directive('link', {
   },
 
   updateElement() {
+    let manager = this.manager;
+    let ctx = manager.context;
     let state = this.state;
     if (!state) {
       return;
     }
-    this.el.setAttribute('href', state.createHref(this.params));
-    // Add active class
-    let manager = this.manager;
-    let ctx = manager.context;
+    let params = Object.assign({}, ctx.params, this.params);
+    this.el.setAttribute('href', state.createHref(params));
+    // Add/remove active class
     this.el.classList.remove(manager.activeClass);
     if (ctx.state) {
-      let paramsMatch = Object.keys(this.params)
-        .every(key => ctx.params[key] == this.params[key]);
+      let paramsMatch = Object.keys(params)
+        .every(key => ctx.params[key] == params[key]);
       let active = ctx.state.includes(state) && paramsMatch;
       if (active) {
         this.el.classList.add(manager.activeClass);
+      } else {
+        this.el.classList.remove(manager.activeClass);
       }
     }
   }

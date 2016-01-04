@@ -27,6 +27,7 @@ import './directives';
  * State manager emits following events:
  *
  *   * `history_updated`
+ *   * `context_updated`
  *   * `transition_finished`
  *
  */
@@ -229,6 +230,7 @@ export default class StateManager extends EventEmitter {
    */
   update(params, replace) {
     Object.assign(this.context.params, params);
+    this.emit('context_updated', this.context);
     return Promise.resolve()
       .then(() => this._updateHistory(replace));
   }
