@@ -109,6 +109,25 @@ describe('URL routing', function() {
       .then(done, done);
   });
 
+  it('should support optional URL params with defaults', function(done) {
+    let sm = createStateManager();
+    sm.start()
+      .then(() => sm.go({ name: 'hello' }))
+      .then(() => {
+        assert.equal(sm.context.state.name, 'hello');
+        assert.equal(location.hash, '#/hello/World');
+        assert.equal(sm.context.params.name, 'World');
+      })
+      .then(() => sm.go({ name: 'hello', params: { name: 'Alice' } }))
+      .then(() => {
+        assert.equal(sm.context.state.name, 'hello');
+        assert.equal(location.hash, '#/hello/Alice');
+        assert.equal(sm.context.params.name, 'Alice');
+      })
+      .then(() => sm.stop())
+      .then(done, done);
+  });
+
   function createStateManager() {
 
     let sm = new StateManager({
@@ -149,6 +168,14 @@ describe('URL routing', function() {
     sm.add({
       name: 'user.messages',
       path: 'messages'
+    });
+
+    sm.add({
+      name: 'hello',
+      path: '/hello/:name?',
+      params: {
+        name: 'World'
+      }
     });
 
     return sm;

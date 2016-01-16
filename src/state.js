@@ -132,10 +132,11 @@ export default class State {
   }
 
   _setupParams(spec) {
-    this._paramsSpec = Object.assign({}, spec.params);
+    this._paramsSpec = {};
     this._pathParams.forEach(param => {
       this._paramsSpec[param.name] = null;
     });
+    Object.assign(this._paramsSpec, spec.params);
   }
 
   _setupOptions(spec) {
@@ -254,7 +255,7 @@ export default class State {
    */
   _makeSearch(params) {
     let query = Object.keys(params).reduce((query, key) => {
-      var value = params[key];
+      let value = params[key];
       if (value != null) {
         query[key] = value;
       }

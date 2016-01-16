@@ -42,6 +42,7 @@
     "max-nested-callbacks": [2, 4],
     "no-lonely-if": 2,
     "space-in-parens": [2, "never"],
-    "no-empty": 0
+    "no-empty": 0,
+    "no-var": 2
   }
 }
