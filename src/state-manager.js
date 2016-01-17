@@ -203,10 +203,23 @@ export default class StateManager extends EventEmitter {
    */
   go(options) {
     if (this.transition) {
-      throw new Error('Transition is in progress. Abort it before going elsewhere.')
+      throw new Error('Transition is in progress.')
     }
-    this.transition = new Transition(this, options);
-    return this.transition.run()
+    this.transition = new Transition(this);
+    let currentState = this.context.state;
+    let name;
+    if (typeof options === 'string') {
+      name = options;
+      options = {};
+    } else if (options.name) {
+      name = options.name;
+    } else if (currentState) {
+      name = currentState.name;
+    } else {
+      throw new Error('Destination state not specified');
+    }
+    return Promise.resolve()
+      .then(() => this.transition.go(name, options.params || {}))
       .then(result => {
         this.transition = null;
         this.emit('transition_finished');

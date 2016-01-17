@@ -277,12 +277,32 @@ Example:
 ### Redirecting
 
 Enter can optionally redirect to another state by
-returning (or resolving via promise) an object like this: `{ redirect: 'state.name' }`.
+returning (or resolving via promise) an object like this:
+`{ redirect: 'state.name' }` or 
+`{ redirect: { name: 'state.name', params: {} }`.
 
-Note that it's different from `redirect` configuration on `State`: 
-when redirect is returned by `enter` hook the transition will always redirect
+When `redirect` is returned by `enter` hook the transition will always redirect
 whenever it enters specified state (even if this state was not a destination).
-In contrast, if `redirect` is specified as state configuration option it will 
+
+Redirect can also be specified at state configuration level:
+
+```es6
+app.add('users', {
+  redirect: 'users.list',
+  // or with params
+  redirect: {
+    name: 'users.list',
+    params: { sort: '+name' }
+  },
+  // or even function Transition => Promise(stateName)
+  redirect: (transition) => {
+    transition.params.sort = '+name';
+    return Promise.resolve('users.list');
+  }
+});
+```
+
+When `redirect` is specified as state configuration option it will 
 only be effective when moving specifically to this state (in other words,
 no redirect occurs when transitioning through this state to another one).
 

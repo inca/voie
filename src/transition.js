@@ -6,47 +6,44 @@ const debug = Debug('voie:transition');
 
 export default class Transition {
 
-  constructor(manager, spec) {
+  constructor(manager) {
     this.manager = manager;
     this.redirectsCount = 0;
-    let currentState = manager.context.state;
-    let dstStateName;
-    if (typeof spec === 'string') {
-      dstStateName = spec;
-      spec = {};
-    } else if (spec.name) {
-      dstStateName = spec.name;
-    } else if (currentState) {
-      dstStateName = currentState.name;
-    } else {
-      throw new Error('Destination state not specified');
-    }
-    debug('go to %s', dstStateName);
-    this.resolveDstState(dstStateName);
-    this.params = Object.assign({}, manager.context.params, spec.params);
+    this.params = Object.assign({}, manager.context.params);
   }
 
-  resolveDstState(name, isRedirect) {
-    if (isRedirect) {
-      debug('redirect to %s', name);
-    }
+  go(name, params, isRedirect) {
+    debug(isRedirect ? 'redirect to %s' : 'go to %s', name);
+    Object.assign(this.params, params || {});
     let state = this.manager.get(name);
     if (!state) {
       throw new StateNotFoundError(name);
     }
     this.dstState = state;
     if (state.redirect) {
-      this.redirectsCount++;
-      if (this.redirectsCount > this.manager.maxRedirects) {
-        throw new RedirectLoopError(this);
-      }
-      this.resolveDstState(state.redirect, true);
+      return this.handleRedirect(state.redirect);
     }
-  }
-
-  run() {
     return this.goUpstream()
       .then(() => this.goDownstream());
+  }
+
+  handleRedirect(redirect) {
+    this.redirectsCount++;
+    if (this.redirectsCount > this.manager.maxRedirects) {
+      throw new RedirectLoopError(this);
+    }
+    switch (typeof redirect) {
+      case 'string':
+        return this.go(redirect, {}, true);
+      case 'object':
+        return this.go(redirect.name, redirect.params, true);
+      case 'function':
+        return Promise.resolve()
+          .then(() => redirect(this))
+          .then(redirect => this.handleRedirect(redirect));
+      default:
+        throw new Error('Unknown redirect: ' + redirect);
+    }
   }
 
   goUpstream() {
@@ -112,9 +109,9 @@ export default class Transition {
         obj = obj || {};
         debug(' -> entered %s', nextState.name);
         // hooks can return { redirect: 'new.state.name' }
-        if (typeof obj.redirect == 'string') {
-          this.resolveDstState(obj.redirect, true);
-          return this.run();
+        // or { redirect: { name, params } }
+        if (obj.redirect) {
+          return this.handleRedirect(obj.redirect);
         }
         this.manager.context = nextContext;
         this.manager.emit('context_updated', this.manager.context);

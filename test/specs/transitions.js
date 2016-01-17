@@ -1,5 +1,4 @@
 import StateManager from '../../src/state-manager';
-import { RedirectLoopError } from '../../src/error';
 import { createMemoryHistory } from 'history';
 
 describe('Transitions', function() {
@@ -54,6 +53,16 @@ describe('Transitions', function() {
     sm.go('users')
       .then(() => {
         assert.equal(sm.context.state.name, 'users.list');
+      })
+      .then(done, done);
+  });
+
+  it('should redirect with params', function(done) {
+    let sm = createStateManager();
+    sm.go('groups')
+      .then(() => {
+        assert.equal(sm.context.state.name, 'groups.list');
+        assert.equal(sm.context.params.sort, '+name');
       })
       .then(done, done);
   });
@@ -200,7 +209,12 @@ describe('Transitions', function() {
     sm.add({
       name: 'groups',
       parent: 'app',
-      redirect: 'groups.list',
+      redirect: {
+        name: 'groups.list',
+        params: {
+          sort: '+name'
+        }
+      },
       enter: (ctx) => {
         ctx.data.groups = [
           { name: 'Admins' },
@@ -211,6 +225,9 @@ describe('Transitions', function() {
 
     sm.add({
       name: 'groups.list',
+      params: {
+        sort: null
+      },
       component: {
         template: '<ul><li v-for="group in groups">{{ group.name }}</li></ul>'
       }

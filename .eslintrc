@@ -30,7 +30,7 @@
     "no-undefined": 2,
     "no-console": 2,
     "brace-style": [2, "1tbs", { "allowSingleLine": true }],
-    "indent": [2, 2],
+    "indent": [2, 2, { "SwitchCase": 1 }],
     "quotes": [2, "single"],
     "space-before-function-paren": [2, {
       "anonymous": "never",
