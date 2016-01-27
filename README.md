@@ -8,6 +8,11 @@ Current status: **active development** — any feedback is appreciated.
 Simple example app is available on [GitHub](https://github.com/inca/voie-example)
 and [live on Netlify](http://voie-example.netlify.com/).
 
+[Standalone bundles](dist/) are also available, mostly for using with 
+jsfiddle, jsbin, codepen, etc. (note, Vue.js is **not** included in bundles). 
+
+You should never use them in real development — use module bundlers instead.
+
 ## Core concepts
 
 Unlike official [vue-router](https://github.com/vuejs/vue-router) which
@@ -58,6 +63,10 @@ and then render following markup (assuming user has name "Alice"):
   <h1>Hello, Alice!</h1>
 </div>
 ```
+
+**Note:** [fragment instances](http://vuejs.org/guide/components.html#Fragment_Instance)
+are not supported as components. In other words, make sure all components
+contain a single top-level element without flow control directives (`v-if`, `v-for`, etc.)
 
 ## Installation
 
