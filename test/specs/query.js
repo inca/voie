@@ -26,21 +26,21 @@ describe('Query support', function() {
     assert.equal(qs, '/user/Alice?collapsed=true&tags=one&tags=two');
   });
 
-  it('should inherit default query params from hierarchy', function(done) {
+  it('should inherit default query params from hierarchy', function() {
     let sm = createStateManager();
-    sm.go({
+    return sm.go({
       name: 'user',
       params: {
         userName: 'Alice'
       }
     }).then(() => {
       assert.equal(sm.context.url, '/user/Alice?collapsed=false');
-    }).then(done, done);
+    });
   });
 
-  it('should override both inherited and own params', function(done) {
+  it('should override both inherited and own params', function() {
     let sm = createStateManager();
-    sm.go({
+    return sm.go({
       name: 'user',
       params: {
         userName: 'Alice',
@@ -49,12 +49,12 @@ describe('Query support', function() {
       }
     }).then(() => {
       assert.equal(sm.context.url, '/user/Alice?collapsed=true&section=some');
-    }).then(done, done);
+    });
   });
 
-  it('should drop nulls in query params', function(done) {
+  it('should drop nulls in query params', function() {
     let sm = createStateManager();
-    sm.go({
+    return sm.go({
       name: 'user',
       params: {
         userName: 'Alice',
@@ -63,25 +63,24 @@ describe('Query support', function() {
       }
     }).then(() => {
       assert.equal(sm.context.url, '/user/Alice');
-    }).then(done, done);
+    });
   });
 
-  it('should parse query params from location', function(done) {
+  it('should parse query params from location', function() {
     let sm = createStateManager();
     location.hash = '#/user/Alice?collapsed=true&section=any&tags=foo&tags=bar';
-    sm.start().then(() => {
+    return sm.start().then(() => {
       let ctx = sm.context;
       assert.equal(ctx.params.collapsed, 'true');
       assert.equal(ctx.params.section, 'any');
       assert.lengthOf(ctx.params.tags, 2);
     })
-      .then(() => sm.stop())
-      .then(done, done);
+      .then(() => sm.stop());
   });
 
-  it('should update history', function(done) {
+  it('should update history', function() {
     let sm = createStateManager();
-    sm.go({
+    return sm.go({
       name: 'user',
       params: {
         userName: 'Alice'
@@ -89,8 +88,7 @@ describe('Query support', function() {
     }).then(() => sm.update({ collapsed: true }))
       .then(() => {
         assert.equal(location.hash, '#/user/Alice?collapsed=true')
-      })
-      .then(done, done);
+      });
   });
 
   function createStateManager() {

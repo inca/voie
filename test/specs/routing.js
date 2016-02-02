@@ -61,40 +61,37 @@ describe('URL routing', function() {
     assert.equal(st._pathFormat({ userName: 'Alice' }), '/user/Alice/messages');
   });
 
-  it('should visit root state automatically after start', function(done) {
+  it('should visit root state automatically after start', function() {
     let sm = createStateManager();
-    sm.start()
+    return sm.start()
       .then(() => {
         assert.equal(sm.context.state.name, 'users.list');
       })
-      .then(() => sm.stop())
-      .then(done, done);
+      .then(() => sm.stop());
   });
 
-  it('should update URL after start', function(done) {
+  it('should update URL after start', function() {
     let sm = createStateManager();
-    sm.start()
+    return sm.start()
       .then(() => {
         assert.equal(location.hash, '#/users/list');
       })
-      .then(() => sm.stop())
-      .then(done, done);
+      .then(() => sm.stop());
   });
 
-  it('should update URL after visiting another state', function(done) {
+  it('should update URL after visiting another state', function() {
     let sm = createStateManager();
-    sm.start()
+    return sm.start()
       .then(() => sm.go({ name: 'user.messages', params: { userName: 'Alice' } }))
       .then(() => {
         assert.equal(location.hash, '#/user/Alice/messages');
       })
-      .then(() => sm.stop())
-      .then(done, done);
+      .then(() => sm.stop());
   });
 
-  it('should update URL after visiting same state with different params', function(done) {
+  it('should update URL after visiting same state with different params', function() {
     let sm = createStateManager();
-    sm.start()
+    return sm.start()
       .then(() => sm.go({ name: 'user', params: { userName: 'Alice' } }))
       .then(() => {
         assert.equal(sm.context.state.name, 'user.dashboard');
@@ -105,13 +102,12 @@ describe('URL routing', function() {
         assert.equal(sm.context.state.name, 'user.dashboard');
         assert.equal(location.hash, '#/user/Bob');
       })
-      .then(() => sm.stop())
-      .then(done, done);
+      .then(() => sm.stop());
   });
 
-  it('should support optional URL params with defaults', function(done) {
+  it('should support optional URL params with defaults', function() {
     let sm = createStateManager();
-    sm.start()
+    return sm.start()
       .then(() => sm.go({ name: 'hello' }))
       .then(() => {
         assert.equal(sm.context.state.name, 'hello');
@@ -124,8 +120,7 @@ describe('URL routing', function() {
         assert.equal(location.hash, '#/hello/Alice');
         assert.equal(sm.context.params.name, 'Alice');
       })
-      .then(() => sm.stop())
-      .then(done, done);
+      .then(() => sm.stop());
   });
 
   function createStateManager() {

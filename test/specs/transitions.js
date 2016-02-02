@@ -14,7 +14,7 @@ describe('Transitions', function() {
     document.body.removeChild(root);
   });
 
-  it('should leave upstream and enter downstream states', function(done) {
+  it('should leave upstream and enter downstream states', function() {
     let sm = createStateManager();
     let entered = [];
     let left = [];
@@ -25,7 +25,7 @@ describe('Transitions', function() {
       state.enter = (ctx) => { entered.push(state.name); return e(ctx); };
       state.leave = (ctx) => { left.push(state.name); return l(ctx) };
     });
-    sm.go('users.list')
+    return sm.go('users.list')
       .then(() => {
         assert.include(entered, 'app');
         assert.include(entered, 'users');
@@ -44,72 +44,65 @@ describe('Transitions', function() {
         assert.notInclude(left, 'groups.list');
         assert.include(entered, 'groups');
         assert.include(entered, 'groups.list');
-      })
-      .then(done, done);
+      });
   });
 
-  it('should allow visiting redirect-only states', function(done) {
+  it('should allow visiting redirect-only states', function() {
     let sm = createStateManager();
-    sm.go('users')
+    return sm.go('users')
       .then(() => {
         assert.equal(sm.context.state.name, 'users.list');
-      })
-      .then(done, done);
+      });
   });
 
-  it('should redirect with params', function(done) {
+  it('should redirect with params', function() {
     let sm = createStateManager();
-    sm.go('groups')
+    return sm.go('groups')
       .then(() => {
         assert.equal(sm.context.state.name, 'groups.list');
         assert.equal(sm.context.params.sort, '+name');
-      })
-      .then(done, done);
+      });
   });
 
-  it('should load state data and render component in layout hierarchy', function(done) {
+  it('should load state data and render component in layout hierarchy', function() {
     let sm = createStateManager();
-    sm.go('users')
+    return sm.go('users')
       .then(() => {
         assert.equal(document.querySelector('#root h1').innerText, 'Users');
         assert.lengthOf(document.querySelectorAll('#root li'), 3);
         assert.equal(document.querySelector('#root li:first-child').innerText, 'Alice');
-      })
-      .then(done, done);
+      });
   });
 
-  it('should dispose of stale components and render new data', function(done) {
+  it('should dispose of stale components and render new data', function() {
     let sm = createStateManager();
-    sm.go('users')
+    return sm.go('users')
       .then(() => sm.go('groups'))
       .then(() => {
         assert.lengthOf(document.querySelectorAll('#root h1'), 0);
         assert.lengthOf(document.querySelectorAll('#root li'), 2);
         assert.equal(document.querySelector('#root li:first-child').innerText, 'Admins');
-      })
-      .then(done, done);
+      });
   });
 
-  it('should support redirect via state.enter hook', function(done) {
+  it('should support redirect via state.enter hook', function() {
     let sm = createStateManager();
     sm.get('groups.list').enter = () => ({ redirect: 'users' });
-    sm.go('groups')
+    return sm.go('groups')
       .then(() => {
         assert.equal(sm.context.state.name, 'users.list');
-      })
-      .then(done, done);
+      });
   });
 
-  it('should support rendering component via state.enter hook', function(done) {
+  it('should support rendering component via state.enter hook', function() {
     let sm = createStateManager();
     sm.get('groups.list').enter = () => ({
       component: { template: '<h2>Groups</h2>' }
     });
-    sm.go('groups')
+    return sm.go('groups')
       .then(() => {
         assert.equal(document.querySelector('h2#root').innerText, 'Groups');
-      })
-      .then(done, done);
+      });
   });
 
   it('should detect redirect loops', function(done) {
@@ -124,7 +117,7 @@ describe('Transitions', function() {
       });
   });
 
-  it('should handle uncaught errors ', function(done) {
+  it('should handle uncaught errors ', function() {
     let sm = createStateManager();
     let handled = null;
     sm.handleUncaught = function(err) {
@@ -133,15 +126,14 @@ describe('Transitions', function() {
     sm.get('users.list').enter = () => {
       throw new Error('oopsie');
     };
-    sm.go('users.list')
+    return sm.go('users.list')
       .then(() => {
         assert.ok(handled);
         assert.equal(handled.message, 'oopsie');
-      })
-      .then(done, done);
+      });
   });
 
-  it('should allow redirecting on errors', function(done) {
+  it('should allow redirecting on errors', function() {
     let sm = createStateManager();
     let handled = false;
     sm.get('users.list').enter = () => {
@@ -151,14 +143,13 @@ describe('Transitions', function() {
       handled = true;
       return { redirect: 'groups.list' };
     };
-    sm.go('users.list')
+    return sm.go('users.list')
       .then(() => {
         assert.equal(sm.context.state.name, 'groups.list');
-      })
-      .then(done, done);
+      });
   });
 
-  it('should render custom components on errors', function(done) {
+  it('should render custom components on errors', function() {
     let sm = createStateManager();
     let handled = false;
     sm.get('users.list').enter = () => {
@@ -168,11 +159,10 @@ describe('Transitions', function() {
       handled = true;
       return { component: { template: '<h2>Error</h2>' } };
     };
-    sm.go('users.list')
+    return sm.go('users.list')
       .then(() => {
         assert.equal(document.querySelector('#root h2').innerText, 'Error');
-      })
-      .then(done, done);
+      });
   });
 
   function createStateManager() {
