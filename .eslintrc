@@ -1,8 +1,8 @@
 {
   "env": {
+    "es6": true,
     "node": true,
-    "browser": false,
-    "es6": true
+    "browser": true
   },
   "parserOptions": {
     "sourceType": "module"
@@ -10,43 +10,54 @@
   "ecmaFeatures": {
     "arrowFunctions": true,
     "blockBindings": true,
-    "modules": true,
-    "classes": true,
+    "destructuring": true,
     "objectLiteralShorthandMethods": true,
     "objectLiteralShorthandProperties": true,
-    "destructuring": true,
-    "templateStrings": true
+    "templateStrings": true,
+    "classes": true,
+    "modules": true
   },
   "rules": {
-    "no-mixed-requires": 0,
-    "curly": 0,
-    "camelcase": 2,
-    "no-process-exit": 0,
-    "eqeqeq": 0,
-    "no-shadow": 0,
-    "no-underscore-dangle": 0,
-    "no-use-before-define": [2, "nofunc"],
-    "guard-for-in": 2,
-    "no-else-return": 2,
-    "no-floating-decimal": 2,
-    "no-param-reassign": 0,
-    "no-self-compare": 2,
-    "no-undefined": 2,
-    "no-console": 2,
     "brace-style": [2, "1tbs", { "allowSingleLine": true }],
+    "camelcase": 2,
+    "curly": 2,
+    "eqeqeq": [2, "smart"],
+    "guard-for-in": 2,
     "indent": [2, 2, { "SwitchCase": 1 }],
+    "init-declarations": [2, "always"],
+    "max-nested-callbacks": [2, 4],
+    "no-caller": 2,
+    "no-console": 2,
+    "no-const-assign": 2,
+    "no-else-return": 2,
+    "no-empty": 2,
+    "no-empty-pattern": 2,
+    "no-floating-decimal": 2,
+    "no-lonely-if": 2,
+    "no-mixed-requires": 2,
+    "no-multi-spaces": 2,
+    "no-multiple-empty-lines": [2, {
+      "max": 2
+    }],
+    "no-param-reassign": 0,
+    "no-process-exit": 0,
+    "no-self-compare": 2,
+    "no-sequences": 2,
+    "no-shadow": 0,
+    "no-undef": 2,
+    "no-undefined": 0,
+    "no-underscore-dangle": 0,
+    "no-unused-vars": [2, { "args": "none", "argsIgnorePattern": "^_" }],
+    "no-use-before-define": 0,
+    "no-useless-concat": 2,
+    "no-var": 2,
+    "prefer-const": 2,
     "quotes": [2, "single"],
     "space-before-function-paren": [2, {
       "anonymous": "never",
       "named": "never"
     }],
-    "no-multiple-empty-lines": [2, {
-      "max": 2
-    }],
-    "max-nested-callbacks": [2, 4],
-    "no-lonely-if": 2,
     "space-in-parens": [2, "never"],
-    "no-empty": 0,
-    "no-var": 2
+    "yoda": [2, "never", { "exceptRange": true }]
   }
 }

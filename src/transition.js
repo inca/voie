@@ -19,7 +19,7 @@ export default class Transition {
   go(name, params, isRedirect) {
     debug(isRedirect ? 'redirect to %s' : 'go to %s', name);
     Object.assign(this.params, params || {});
-    let state = this.manager.get(name);
+    const state = this.manager.get(name);
     if (!state) {
       throw new StateNotFoundError(name);
     }
@@ -51,25 +51,25 @@ export default class Transition {
   }
 
   goUpstream() {
-    let ctx = this.manager.context;
+    const ctx = this.manager.context;
     if (!ctx.state) {
       // We're at root state, no cleanup is necessary
       return Promise.resolve();
     }
     // Stop going up if state is common with dst branch
-    let state = ctx.state;
+    const state = ctx.state;
     if (this.dstState.includes(state)) {
       // All ctx params must match target ones
       // (e.g. when going from /user/1 to /user/2)
-      let paramsMatch = Object.keys(ctx.params)
-        .every(key => ctx.params[key] == this.params[key]);
+      const paramsMatch = Object.keys(ctx.params)
+        .every(key => ctx.params[key] === this.params[key]);
       if (paramsMatch) {
         return Promise.resolve();
       }
     }
     return Promise.resolve()
-      .then(() => state.leave(ctx, this))
-      .then(() => this.manager.afterEach(ctx, this))
+      .then(() => state.leave(ctx))
+      .then(() => this.manager.afterEach(ctx))
       .then(() => {
         debug(' <- left %s', state.name);
         this.cleanup(ctx);
@@ -80,11 +80,11 @@ export default class Transition {
   cleanup(ctx) {
     if (ctx.vm) {
       // Destroy vm and restore v-view element
-      let el = ctx.vm.$el;
-      let mp = ctx.mountPoint;
+      const el = ctx.vm.$el;
+      const mp = ctx.mountPoint;
       ctx.vm.$destroy();
       if (mp) {
-        let viewEl = ctx.mountPoint.viewEl;
+        const viewEl = ctx.mountPoint.viewEl;
         el.parentNode.replaceChild(viewEl, el);
         mp.viewElChildren.forEach(el => viewEl.appendChild(el));
       }
@@ -94,64 +94,72 @@ export default class Transition {
   }
 
   goDownstream() {
-    let prevCtx = this.manager.context;
-    let dstLineage = this.dstState.lineage;
-    let nextState = dstLineage[dstLineage.indexOf(prevCtx.state) + 1];
+    const prevCtx = this.manager.context;
+    const dstLineage = this.dstState.lineage;
+    const nextState = dstLineage[dstLineage.indexOf(prevCtx.state) + 1];
     if (!nextState) {
       return Promise.resolve();
     }
 
     // New context inherits params and data from parent
-    let nextContext = {
+    const nextContext = {
       parent: prevCtx,
       state: nextState,
       params: Object.assign({}, prevCtx.params, nextState._makeParams(this.params)),
       data: Object.assign({}, prevCtx.data)
     };
 
-    return Promise.resolve()
-      .then(() => this.manager.beforeEach(nextContext, this))
-      .then(_handleEnterHook)
+    return Promise.resolve(true)
+      .then(() => this.manager.beforeEach(nextContext))
+      .catch(err => nextState.handleError(err, nextContext))
+      .then(obj => this._handleEnterHook(obj, nextContext))
       .then(proceed => {
-        if (proceed) {
-          return nextState.enter(nextContext, this)
-            .then(_handleEnterHook);
+        if (!proceed) {
+          return false;
         }
-        return false;
+        return Promise.resolve()
+          .then(() => nextState.enter(nextContext))
+          .catch(err => nextState.handleError(err, nextContext))
+          .then(obj => this._handleEnterHook(obj, nextContext));
       })
       .then(proceed => {
-        if (proceed && nextState != this.dstState) {
+        if (!proceed) {
+          return false;
+        }
+        this.manager.context = nextContext;
+        this.manager.emit('context_updated', this.manager.context);
+        this.render(nextContext, nextState.component);
+        if (nextState !== this.dstState) {
           return this.goDownstream();
         }
-      })
-      .catch(err => nextState.handleError(err, nextContext));
+      });
+  }
 
-    function _handleEnterHook(obj) {
-      obj = obj || {};
-      debug(' -> entered %s', nextState.name);
-      // hooks can return { redirect: 'new.state.name' }
-      // or { redirect: { name, params } }
-      if (obj.redirect) {
-        return this.handleRedirect(obj.redirect)
-          .then(() => false);
-      }
-      this.manager.context = nextContext;
-      this.manager.emit('context_updated', this.manager.context);
-      // hooks can also return { component: <VueComponent> }
-      this.render(nextContext, obj.component);
-      return true;
+  /**
+   * @return {Boolean} proceed
+   * @private
+   */
+  _handleEnterHook(obj, nextContext) {
+    obj = obj || {};
+    const nextState = nextContext.state;
+    debug(' -> entered %s', nextState.name);
+    // hooks can return { redirect: 'new.state.name' }
+    // or { redirect: { name, params } }
+    if (obj.redirect) {
+      return this.handleRedirect(obj.redirect)
+        .then(() => false);
     }
-
+    // hooks can also return { component: <VueComponent> }
+    const rendered = this.render(nextContext, obj.component);
+    return !rendered;
   }
 
   render(ctx, comp) {
-    let state = ctx.state;
-    comp = comp || state.component;
     if (!comp) {
-      return;
+      return false;
     }
-    let Comp = toVueComponent(comp);
-    let mp = this.manager._getMountPoint();
+    const Comp = toVueComponent(comp);
+    const mp = this.manager._getMountPoint();
     ctx.mountPoint = mp;
     ctx.vm = new Comp({
       data: ctx.data,
@@ -159,9 +167,10 @@ export default class Transition {
       parent: mp.hostVm,
       params: ctx.params,
       ctx: ctx,
-      state: state,
+      state: ctx.state,
       manager: this.manager
     });
+    return true;
   }
 
 }

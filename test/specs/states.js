@@ -5,7 +5,7 @@ describe('States', function() {
 
   describe('hierarchy', function() {
 
-    let sm = new StateManager({
+    const sm = new StateManager({
       el: document.body,
       history: createMemoryHistory()
     });
@@ -33,8 +33,8 @@ describe('States', function() {
     });
 
     it('lineage shows upstream path from state to root', function() {
-      let usersList = sm.get('users.list');
-      let groups = sm.get('groups');
+      const usersList = sm.get('users.list');
+      const groups = sm.get('groups');
       assert.lengthOf(usersList.lineage, 3);
       assert.equal(usersList.lineage[0], sm.get('app'));
       assert.equal(usersList.lineage[1], sm.get('users'));
@@ -55,7 +55,7 @@ describe('States', function() {
 
   describe('params processing', function() {
 
-    let sm = new StateManager({
+    const sm = new StateManager({
       el: document.body,
       history: createMemoryHistory()
     });
@@ -70,7 +70,7 @@ describe('States', function() {
     });
 
     it('should apply param defaults from spec', function() {
-      let params = sm.get('user')._makeParams({
+      const params = sm.get('user')._makeParams({
         name: 'Alice',
         display: 'full'
       });
@@ -80,7 +80,7 @@ describe('States', function() {
     });
 
     it('should drop param not from spec', function() {
-      let params = sm.get('user')._makeParams({
+      const params = sm.get('user')._makeParams({
         name: 'Alice',
         something: '?'
       });

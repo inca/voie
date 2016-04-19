@@ -116,10 +116,10 @@ export default class State {
       spec.path = spec.url;
     }
     this.path = spec.path || '';
-    if (this.path.indexOf('/') == 0) {
+    if (this.path.indexOf('/') === 0) {
       this.fullPath = this.path;
     } else {
-      let parentPath = this.parentState ? this.parentState.fullPath : '/';
+      const parentPath = this.parentState ? this.parentState.fullPath : '/';
       this.fullPath = parentPath.replace(/\/+$/, '') +
         (this.path ? '/' + this.path : '');
     }
@@ -158,10 +158,9 @@ export default class State {
    * by resolving `{ component: customVueComponent }`.
    *
    * @param ctx — object `{ state, params, data }`
-   * @param {Transition} transition
    * @returns {Promise}
    */
-  enter(ctx, transition) {
+  enter(ctx) {
     return Promise.resolve();
   }
 
@@ -174,10 +173,9 @@ export default class State {
    * by resolving `{ redirect: anotherStateName }`.
    *
    * @param ctx — object `{ state, params, data }`
-   * @param {Transition} transition
    * @returns {Promise}
    */
-  leave(ctx, transition) {
+  leave(ctx) {
     return Promise.resolve();
   }
 
@@ -205,7 +203,7 @@ export default class State {
    * @return {boolean}
    */
   includes(stateOrName) {
-    let state = stateOrName instanceof State ?
+    const state = stateOrName instanceof State ?
       stateOrName : this.manager.get(stateOrName);
     return this.lineage.indexOf(state) > -1;
   }
@@ -218,18 +216,20 @@ export default class State {
    * @private
    */
   _match(location) {
-    let matched = this._pathRegex.exec(location.pathname);
+    const matched = this._pathRegex.exec(location.pathname);
     if (!matched) {
       return null;
     }
-    let params = this._pathParams.reduce((params, p, i) => {
+    const params = this._pathParams.reduce((params, p, i) => {
       params[p.name] = matched[i + 1];
       return params;
     }, {});
     try {
-      let query = querystring.parse(location.search);
+      const query = querystring.parse(location.search);
       Object.assign(params, query);
-    } catch (e) {}
+    } catch (e) {
+      // No query string or parsing failed — we don't care
+    }
     return params;
   }
 
@@ -256,8 +256,8 @@ export default class State {
    * @private
    */
   _makeSearch(params) {
-    let query = Object.keys(params).reduce((query, key) => {
-      let value = params[key];
+    const query = Object.keys(params).reduce((query, key) => {
+      const value = params[key];
       if (value != null) {
         query[key] = value;
       }
@@ -267,11 +267,13 @@ export default class State {
       delete query[p.name];
     });
     try {
-      let search = querystring.stringify(query);
+      const search = querystring.stringify(query);
       if (search) {
         return '?' + search;
       }
-    } catch (e) {}
+    } catch (e) {
+      // No query string or serialization failed — we don't care
+    }
     return '';
   }
 

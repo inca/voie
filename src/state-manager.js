@@ -55,7 +55,7 @@ export default class StateManager extends EventEmitter {
    *   * `handleUncaught` — `function(err) => Promise` invoked
    *     when transition fails with error
    *
-   *   * `beforeEach` — `function(ctx, transition) => Promise` invoked
+   *   * `beforeEach` — `function(ctx) => Promise` invoked
    *     before each `enter` hook
    */
   constructor(spec) {
@@ -87,7 +87,7 @@ export default class StateManager extends EventEmitter {
     let base = spec.base;
     // Try to take base from `<base href=""/>`
     if (!base) {
-      let baseEl = document.querySelector('base');
+      const baseEl = document.querySelector('base');
       base = baseEl && baseEl.getAttribute('href');
     }
     base = (base || '').replace(/\/+$/, '');
@@ -232,8 +232,8 @@ export default class StateManager extends EventEmitter {
       throw new Error('Transition is in progress.')
     }
     this.transition = new Transition(this);
-    let currentState = this.context.state;
-    let name;
+    const currentState = this.context.state;
+    let name = null;
     if (typeof options === 'string') {
       name = options;
       options = {};
@@ -281,10 +281,10 @@ export default class StateManager extends EventEmitter {
    * (and the component that hosts it).
    */
   _getMountPoint() {
-    let el = null;
     let ctx = this.context;
+    let el = null;
     while (ctx && !el) {
-      let state = ctx.state;
+      const state = ctx.state;
       if (state) {
         el = this.mountPoints[state.name];
       } else {
@@ -321,13 +321,13 @@ export default class StateManager extends EventEmitter {
   }
 
   _matchLocation(location) {
-    let url = location.pathname + location.search;
-    if (url == this.context.url) {
+    const url = location.pathname + location.search;
+    if (url === this.context.url) {
       return;
     }
-    let found = Object.keys(this.states).find(name => {
-      let state = this.states[name];
-      let matched = state._match(location);
+    const found = Object.keys(this.states).find(name => {
+      const state = this.states[name];
+      const matched = state._match(location);
       if (matched) {
         debug('match url %s -> %s', location.pathname, name);
         this.go({
@@ -347,9 +347,9 @@ export default class StateManager extends EventEmitter {
   }
 
   _updateHistory(replace) {
-    let state = this.context.state;
-    let url = state ? state._makeUrl(this.context.params) : '/';
-    if (url == this.context.url) {
+    const state = this.context.state;
+    const url = state ? state._makeUrl(this.context.params) : '/';
+    if (url === this.context.url) {
       return;
     }
     this.context.url = url;

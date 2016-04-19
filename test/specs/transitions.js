@@ -4,24 +4,24 @@ import { createMemoryHistory } from 'history';
 describe('Transitions', function() {
 
   beforeEach(() => {
-    let root = document.createElement('div');
+    const root = document.createElement('div');
     root.setAttribute('id', 'root');
     document.body.appendChild(root);
   });
 
   afterEach(() => {
-    let root = document.getElementById('root');
+    const root = document.getElementById('root');
     document.body.removeChild(root);
   });
 
   it('should leave upstream and enter downstream states', function() {
-    let sm = createStateManager();
-    let entered = [];
-    let left = [];
+    const sm = createStateManager();
+    const entered = [];
+    const left = [];
     ['app', 'users', 'users.list', 'groups', 'groups.list'].forEach(name => {
-      let state = sm.get(name);
-      let e = state.enter;
-      let l = state.leave;
+      const state = sm.get(name);
+      const e = state.enter;
+      const l = state.leave;
       state.enter = (ctx) => { entered.push(state.name); return e(ctx); };
       state.leave = (ctx) => { left.push(state.name); return l(ctx) };
     });
@@ -48,7 +48,7 @@ describe('Transitions', function() {
   });
 
   it('should allow visiting redirect-only states', function() {
-    let sm = createStateManager();
+    const sm = createStateManager();
     return sm.go('users')
       .then(() => {
         assert.equal(sm.context.state.name, 'users.list');
@@ -56,7 +56,7 @@ describe('Transitions', function() {
   });
 
   it('should redirect with params', function() {
-    let sm = createStateManager();
+    const sm = createStateManager();
     return sm.go('groups')
       .then(() => {
         assert.equal(sm.context.state.name, 'groups.list');
@@ -65,7 +65,7 @@ describe('Transitions', function() {
   });
 
   it('should load state data and render component in layout hierarchy', function() {
-    let sm = createStateManager();
+    const sm = createStateManager();
     return sm.go('users')
       .then(() => {
         assert.equal(document.querySelector('#root h1').innerText, 'Users');
@@ -75,7 +75,7 @@ describe('Transitions', function() {
   });
 
   it('should dispose of stale components and render new data', function() {
-    let sm = createStateManager();
+    const sm = createStateManager();
     return sm.go('users')
       .then(() => sm.go('groups'))
       .then(() => {
@@ -86,7 +86,7 @@ describe('Transitions', function() {
   });
 
   it('should support redirect via state.enter hook', function() {
-    let sm = createStateManager();
+    const sm = createStateManager();
     sm.get('groups.list').enter = () => ({ redirect: 'users' });
     return sm.go('groups')
       .then(() => {
@@ -95,7 +95,7 @@ describe('Transitions', function() {
   });
 
   it('should support rendering component via state.enter hook', function() {
-    let sm = createStateManager();
+    const sm = createStateManager();
     sm.get('groups.list').enter = () => ({
       component: { template: '<h2>Groups</h2>' }
     });
@@ -106,7 +106,7 @@ describe('Transitions', function() {
   });
 
   it('should detect redirect loops', function(done) {
-    let sm = createStateManager();
+    const sm = createStateManager();
     sm.get('groups.list').enter = () => ({ redirect: 'users' });
     sm.get('users.list').enter = () => ({ redirect: 'groups' });
     sm.go('groups')
@@ -118,7 +118,7 @@ describe('Transitions', function() {
   });
 
   it('should handle uncaught errors ', function() {
-    let sm = createStateManager();
+    const sm = createStateManager();
     let handled = null;
     sm.handleUncaught = function(err) {
       handled = err;
@@ -134,7 +134,7 @@ describe('Transitions', function() {
   });
 
   it('should allow redirecting on errors', function() {
-    let sm = createStateManager();
+    const sm = createStateManager();
     let handled = false;
     sm.get('users.list').enter = () => {
       throw new Error('oopsie');
@@ -145,12 +145,13 @@ describe('Transitions', function() {
     };
     return sm.go('users.list')
       .then(() => {
+        assert.equal(handled, true);
         assert.equal(sm.context.state.name, 'groups.list');
       });
   });
 
   it('should render custom components on errors', function() {
-    let sm = createStateManager();
+    const sm = createStateManager();
     let handled = false;
     sm.get('users.list').enter = () => {
       throw new Error('oopsie');
@@ -161,12 +162,13 @@ describe('Transitions', function() {
     };
     return sm.go('users.list')
       .then(() => {
+        assert.equal(handled, true);
         assert.equal(document.querySelector('#root h2').innerText, 'Error');
       });
   });
 
   function createStateManager() {
-    let sm = new StateManager({
+    const sm = new StateManager({
       el: '#root',
       history: createMemoryHistory()
     });

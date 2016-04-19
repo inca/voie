@@ -4,21 +4,21 @@ import { createHashHistory } from 'history';
 describe('Query support', function() {
 
   beforeEach(() => {
-    let root = document.createElement('div');
+    const root = document.createElement('div');
     root.setAttribute('id', 'root');
     document.body.appendChild(root);
   });
 
   afterEach(() => {
-    let root = document.getElementById('root');
+    const root = document.getElementById('root');
     document.body.removeChild(root);
     // We use hash history here to simplify test infrastructure
     location.hash = '';
   });
 
   it('should format URL with query strings', function() {
-    let sm = createStateManager();
-    let qs = sm.get('user')._makeUrl({
+    const sm = createStateManager();
+    const qs = sm.get('user')._makeUrl({
       userName: 'Alice',
       collapsed: true,
       tags: ['one', 'two']
@@ -27,7 +27,7 @@ describe('Query support', function() {
   });
 
   it('should inherit default query params from hierarchy', function() {
-    let sm = createStateManager();
+    const sm = createStateManager();
     return sm.go({
       name: 'user',
       params: {
@@ -39,7 +39,7 @@ describe('Query support', function() {
   });
 
   it('should override both inherited and own params', function() {
-    let sm = createStateManager();
+    const sm = createStateManager();
     return sm.go({
       name: 'user',
       params: {
@@ -53,7 +53,7 @@ describe('Query support', function() {
   });
 
   it('should drop nulls in query params', function() {
-    let sm = createStateManager();
+    const sm = createStateManager();
     return sm.go({
       name: 'user',
       params: {
@@ -67,10 +67,10 @@ describe('Query support', function() {
   });
 
   it('should parse query params from location', function() {
-    let sm = createStateManager();
+    const sm = createStateManager();
     location.hash = '#/user/Alice?collapsed=true&section=any&tags=foo&tags=bar';
     return sm.start().then(() => {
-      let ctx = sm.context;
+      const ctx = sm.context;
       assert.equal(ctx.params.collapsed, 'true');
       assert.equal(ctx.params.section, 'any');
       assert.lengthOf(ctx.params.tags, 2);
@@ -79,7 +79,7 @@ describe('Query support', function() {
   });
 
   it('should update history', function() {
-    let sm = createStateManager();
+    const sm = createStateManager();
     return sm.go({
       name: 'user',
       params: {
@@ -93,7 +93,7 @@ describe('Query support', function() {
 
   function createStateManager() {
 
-    let sm = new StateManager({
+    const sm = new StateManager({
       el: '#root',
       history: createHashHistory({
         queryKey: false

@@ -6,7 +6,7 @@ const debug = Debug('voie:directive');
 Vue.elementDirective('v-view', {
 
   bind() {
-    let { state, manager } = this.vm.$options;
+    const { state, manager } = this.vm.$options;
     manager.mountPoints[state.name] = {
       hostVm: this.vm,
       viewEl: this.el,
@@ -16,7 +16,7 @@ Vue.elementDirective('v-view', {
   },
 
   unbind() {
-    let { state, manager } = this.vm.$options;
+    const { state, manager } = this.vm.$options;
     delete manager.mountPoints[state.name];
     debug('unregistered v-view', this.el);
   }
@@ -42,7 +42,7 @@ Vue.directive('link', {
       throw new Error('v-link: expression "' +
         this.expression + '" should resolve to { name: ..., params... }}')
     }
-    let manager = this.manager;
+    const manager = this.manager;
     let name = null;
     if (typeof value == 'string') {
       name = value;
@@ -70,20 +70,20 @@ Vue.directive('link', {
   },
 
   updateElement() {
-    let manager = this.manager;
-    let ctx = manager.context;
-    let state = this.state;
+    const manager = this.manager;
+    const ctx = manager.context;
+    const state = this.state;
     if (!state) {
       return;
     }
-    let params = Object.assign({}, ctx.params, this.params);
+    const params = Object.assign({}, ctx.params, this.params);
     this.el.setAttribute('href', state.createHref(params));
     // Add/remove active class
     this.el.classList.remove(manager.activeClass);
     if (ctx.state) {
-      let paramsMatch = Object.keys(params)
-        .every(key => ctx.params[key] == params[key]);
-      let active = ctx.state.includes(state) && paramsMatch;
+      const paramsMatch = Object.keys(params)
+        .every(key => ctx.params[key] === params[key]);
+      const active = ctx.state.includes(state) && paramsMatch;
       if (active) {
         this.el.classList.add(manager.activeClass);
       } else {
@@ -95,7 +95,7 @@ Vue.directive('link', {
 });
 
 function resolveManager(vm) {
-  let manager = vm.$options.manager;
+  const manager = vm.$options.manager;
   if (manager) {
     return manager;
   }
