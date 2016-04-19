@@ -283,6 +283,26 @@ Example:
 }
 ```
 
+### Before each / after each
+
+Additionally one can configure global `beforeEach` and `afterEach` hooks
+that will be applied before `enter` hooks and after `leave` hook on each state
+respectively.
+
+Global hooks are configured on `StateManager`:
+
+```es6
+new StateManager({
+
+  beforeEach(ctx) {
+    if (ctx.state.name === 'private') {
+      return { redirect: 'not_allowed' };
+    }
+  }
+
+});
+```
+
 ### Redirecting
 
 Enter can optionally redirect to another state by
