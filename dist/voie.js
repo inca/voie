@@ -5000,7 +5000,7 @@ _vue2.default.directive('link', {
     this.el.classList.remove(manager.activeClass);
     if (ctx.state) {
       var paramsMatch = (0, _keys2.default)(params).every(function (key) {
-        return ctx.params[key] == params[key];
+        return ctx.params[key] === params[key];
       });
       var active = ctx.state.includes(state) && paramsMatch;
       if (active) {
@@ -5156,10 +5156,6 @@ var _eventemitter = require('eventemitter3');
 
 var _eventemitter2 = _interopRequireDefault(_eventemitter);
 
-var _vue = require('vue');
-
-var _vue2 = _interopRequireDefault(_vue);
-
 var _state = require('./state');
 
 var _state2 = _interopRequireDefault(_state);
@@ -5224,6 +5220,9 @@ var StateManager = (function (_EventEmitter) {
    *
    *   * `handleUncaught` — `function(err) => Promise` invoked
    *     when transition fails with error
+   *
+   *   * `beforeEach` — `function(ctx) => Promise` invoked
+   *     before each `enter` hook
    */
 
   function StateManager(spec) {
@@ -5234,6 +5233,7 @@ var StateManager = (function (_EventEmitter) {
     _this._setupEl(spec);
     _this._setupHistory(spec);
     _this._setupOptions(spec);
+    _this._setupHooks(spec);
     _this._setupState();
     return _this;
   }
@@ -5277,6 +5277,16 @@ var StateManager = (function (_EventEmitter) {
       this.activeClass = spec.activeClass || 'active';
     }
   }, {
+    key: '_setupHooks',
+    value: function _setupHooks(spec) {
+      if (spec.beforeEach) {
+        this.beforeEach = spec.beforeEach;
+      }
+      if (spec.afterEach) {
+        this.afterEach = spec.afterEach;
+      }
+    }
+  }, {
     key: '_setupState',
     value: function _setupState() {
       this.states = {};
@@ -5295,6 +5305,26 @@ var StateManager = (function (_EventEmitter) {
       };
       this.transition = null;
     }
+
+    /**
+     * Executed before `enter` hooks on each state.
+     * 
+     * @returns {Promise}
+     */
+
+  }, {
+    key: 'beforeEach',
+    value: function beforeEach() {}
+
+    /**
+     * Executed after `leave` hooks on each state.
+     * 
+     * @returns {Promise}
+     */
+
+  }, {
+    key: 'afterEach',
+    value: function afterEach() {}
 
     /**
      * Handles errors uncaught during transition.
@@ -5400,7 +5430,7 @@ var StateManager = (function (_EventEmitter) {
       }
       this.transition = new _transition2.default(this);
       var currentState = this.context.state;
-      var name = undefined;
+      var name = null;
       if (typeof options === 'string') {
         name = options;
         options = {};
@@ -5457,8 +5487,8 @@ var StateManager = (function (_EventEmitter) {
   }, {
     key: '_getMountPoint',
     value: function _getMountPoint() {
-      var el = null;
       var ctx = this.context;
+      var el = null;
       while (ctx && !el) {
         var state = ctx.state;
         if (state) {
@@ -5513,7 +5543,7 @@ var StateManager = (function (_EventEmitter) {
       var _this5 = this;
 
       var url = location.pathname + location.search;
-      if (url == this.context.url) {
+      if (url === this.context.url) {
         return;
       }
       var found = (0, _keys2.default)(this.states).find(function (name) {
@@ -5541,7 +5571,7 @@ var StateManager = (function (_EventEmitter) {
     value: function _updateHistory(replace) {
       var state = this.context.state;
       var url = state ? state._makeUrl(this.context.params) : '/';
-      if (url == this.context.url) {
+      if (url === this.context.url) {
         return;
       }
       this.context.url = url;
@@ -5562,7 +5592,7 @@ var StateManager = (function (_EventEmitter) {
 exports.default = StateManager;
 ;
 
-},{"./directives":122,"./state":126,"./transition":127,"babel-runtime/core-js/object/assign":1,"babel-runtime/core-js/object/get-prototype-of":4,"babel-runtime/core-js/object/keys":5,"babel-runtime/core-js/promise":7,"babel-runtime/helpers/classCallCheck":9,"babel-runtime/helpers/createClass":10,"babel-runtime/helpers/inherits":11,"babel-runtime/helpers/possibleConstructorReturn":12,"babel-runtime/helpers/typeof":13,"debug":88,"eventemitter3":91,"history":107,"vue":"vue"}],126:[function(require,module,exports){
+},{"./directives":122,"./state":126,"./transition":127,"babel-runtime/core-js/object/assign":1,"babel-runtime/core-js/object/get-prototype-of":4,"babel-runtime/core-js/object/keys":5,"babel-runtime/core-js/promise":7,"babel-runtime/helpers/classCallCheck":9,"babel-runtime/helpers/createClass":10,"babel-runtime/helpers/inherits":11,"babel-runtime/helpers/possibleConstructorReturn":12,"babel-runtime/helpers/typeof":13,"debug":88,"eventemitter3":91,"history":107}],126:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -5650,10 +5680,10 @@ var State = (function () {
    *     to this state; typically used in "abstract" states (e.g. layouts,
    *     data-preparation, etc.) to specify default sub-state
    *
-   *   * `enter` — optional `function(ctx) => Promise` hook invoked
+   *   * `enter` — optional `function(ctx, transition) => Promise` hook invoked
    *     when transitioning into this state or its descendants
    *
-   *   * `leave` — optional `function(ctx) => Promise` hook invoked
+   *   * `leave` — optional `function(ctx, transition) => Promise` hook invoked
    *     when transitioning from this state or its descendants
    *
    *   * `handleError` — optional `function(err, ctx) => Promise` invoked
@@ -5723,7 +5753,7 @@ var State = (function () {
         spec.path = spec.url;
       }
       this.path = spec.path || '';
-      if (this.path.indexOf('/') == 0) {
+      if (this.path.indexOf('/') === 0) {
         this.fullPath = this.path;
       } else {
         var parentPath = this.parentState ? this.parentState.fullPath : '/';
@@ -5851,7 +5881,9 @@ var State = (function () {
       try {
         var query = _queryString2.default.parse(location.search);
         (0, _assign2.default)(params, query);
-      } catch (e) {}
+      } catch (e) {
+        // No query string or parsing failed — we don't care
+      }
       return params;
     }
 
@@ -5901,7 +5933,9 @@ var State = (function () {
         if (search) {
           return '?' + search;
         }
-      } catch (e) {}
+      } catch (e) {
+        // No query string or serialization failed — we don't care
+      }
       return '';
     }
 
@@ -6052,7 +6086,7 @@ var Transition = (function () {
         // All ctx params must match target ones
         // (e.g. when going from /user/1 to /user/2)
         var paramsMatch = (0, _keys2.default)(ctx.params).every(function (key) {
-          return ctx.params[key] == _this3.params[key];
+          return ctx.params[key] === _this3.params[key];
         });
         if (paramsMatch) {
           return _promise2.default.resolve();
@@ -6060,6 +6094,8 @@ var Transition = (function () {
       }
       return _promise2.default.resolve().then(function () {
         return state.leave(ctx);
+      }).then(function () {
+        return _this3.manager.afterEach(ctx);
       }).then(function () {
         debug(' <- left %s', state.name);
         _this3.cleanup(ctx);
@@ -6099,6 +6135,7 @@ var Transition = (function () {
       if (!nextState) {
         return _promise2.default.resolve();
       }
+
       // New context inherits params and data from parent
       var nextContext = {
         parent: prevCtx,
@@ -6106,34 +6143,64 @@ var Transition = (function () {
         params: (0, _assign2.default)({}, prevCtx.params, nextState._makeParams(this.params)),
         data: (0, _assign2.default)({}, prevCtx.data)
       };
-      return _promise2.default.resolve().then(function () {
-        return nextState.enter(nextContext);
+
+      return _promise2.default.resolve(true).then(function () {
+        return _this4.manager.beforeEach(nextContext);
       }).catch(function (err) {
         return nextState.handleError(err, nextContext);
       }).then(function (obj) {
-        obj = obj || {};
-        debug(' -> entered %s', nextState.name);
-        // hooks can return { redirect: 'new.state.name' }
-        // or { redirect: { name, params } }
-        if (obj.redirect) {
-          return _this4.handleRedirect(obj.redirect);
+        return _this4._handleEnterHook(obj, nextContext);
+      }).then(function (proceed) {
+        if (!proceed) {
+          return false;
+        }
+        return _promise2.default.resolve().then(function () {
+          return nextState.enter(nextContext);
+        }).catch(function (err) {
+          return nextState.handleError(err, nextContext);
+        }).then(function (obj) {
+          return _this4._handleEnterHook(obj, nextContext);
+        });
+      }).then(function (proceed) {
+        if (!proceed) {
+          return false;
         }
         _this4.manager.context = nextContext;
         _this4.manager.emit('context_updated', _this4.manager.context);
-        // hooks can also return { component: <VueComponent> }
-        _this4.render(nextContext, obj.component);
-        if (nextState != _this4.dstState) {
+        _this4.render(nextContext, nextState.component);
+        if (nextState !== _this4.dstState) {
           return _this4.goDownstream();
         }
       });
     }
+
+    /**
+     * @return {Boolean} proceed
+     * @private
+     */
+
+  }, {
+    key: '_handleEnterHook',
+    value: function _handleEnterHook(obj, nextContext) {
+      obj = obj || {};
+      var nextState = nextContext.state;
+      debug(' -> entered %s', nextState.name);
+      // hooks can return { redirect: 'new.state.name' }
+      // or { redirect: { name, params } }
+      if (obj.redirect) {
+        return this.handleRedirect(obj.redirect).then(function () {
+          return false;
+        });
+      }
+      // hooks can also return { component: <VueComponent> }
+      var rendered = this.render(nextContext, obj.component);
+      return !rendered;
+    }
   }, {
     key: 'render',
     value: function render(ctx, comp) {
-      var state = ctx.state;
-      comp = comp || state.component;
       if (!comp) {
-        return;
+        return false;
       }
       var Comp = (0, _utils.toVueComponent)(comp);
       var mp = this.manager._getMountPoint();
@@ -6144,9 +6211,15 @@ var Transition = (function () {
         parent: mp.hostVm,
         params: ctx.params,
         ctx: ctx,
-        state: state,
+        state: ctx.state,
         manager: this.manager
       });
+      return true;
+    }
+  }, {
+    key: 'to',
+    get: function get() {
+      return this.dstState;
     }
   }]);
   return Transition;
@@ -6169,7 +6242,7 @@ var _vue2 = _interopRequireDefault(_vue);
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function toVueComponent(obj) {
-  if (obj.name == 'VueComponent') {
+  if (obj.name === 'VueComponent') {
     return obj;
   }
   return _vue2.default.extend(obj);
