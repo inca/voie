@@ -69,6 +69,7 @@ export default class Transition {
     }
     return Promise.resolve()
       .then(() => state.leave(ctx, this))
+      .then(() => this.manager.afterEach(ctx, this))
       .then(() => {
         debug(' <- left %s', state.name);
         this.cleanup(ctx);
@@ -99,6 +100,7 @@ export default class Transition {
     if (!nextState) {
       return Promise.resolve();
     }
+
     // New context inherits params and data from parent
     let nextContext = {
       parent: prevCtx,
@@ -106,25 +108,40 @@ export default class Transition {
       params: Object.assign({}, prevCtx.params, nextState._makeParams(this.params)),
       data: Object.assign({}, prevCtx.data)
     };
+
     return Promise.resolve()
-      .then(() => nextState.enter(nextContext, this))
-      .catch(err => nextState.handleError(err, nextContext))
-      .then(obj => {
-        obj = obj || {};
-        debug(' -> entered %s', nextState.name);
-        // hooks can return { redirect: 'new.state.name' }
-        // or { redirect: { name, params } }
-        if (obj.redirect) {
-          return this.handleRedirect(obj.redirect);
+      .then(() => this.manager.beforeEach(nextContext, this))
+      .then(_handleEnterHook)
+      .then(proceed => {
+        if (proceed) {
+          return nextState.enter(nextContext, this)
+            .then(_handleEnterHook);
         }
-        this.manager.context = nextContext;
-        this.manager.emit('context_updated', this.manager.context);
-        // hooks can also return { component: <VueComponent> }
-        this.render(nextContext, obj.component);
-        if (nextState != this.dstState) {
+        return false;
+      })
+      .then(proceed => {
+        if (proceed && nextState != this.dstState) {
           return this.goDownstream();
         }
-      });
+      })
+      .catch(err => nextState.handleError(err, nextContext));
+
+    function _handleEnterHook(obj) {
+      obj = obj || {};
+      debug(' -> entered %s', nextState.name);
+      // hooks can return { redirect: 'new.state.name' }
+      // or { redirect: { name, params } }
+      if (obj.redirect) {
+        return this.handleRedirect(obj.redirect)
+          .then(() => false);
+      }
+      this.manager.context = nextContext;
+      this.manager.emit('context_updated', this.manager.context);
+      // hooks can also return { component: <VueComponent> }
+      this.render(nextContext, obj.component);
+      return true;
+    }
+
   }
 
   render(ctx, comp) {

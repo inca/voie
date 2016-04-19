@@ -1,7 +1,11 @@
 {
   "env": {
     "node": true,
-    "browser": false
+    "browser": false,
+    "es6": true
+  },
+  "parserOptions": {
+    "sourceType": "module"
   },
   "ecmaFeatures": {
     "arrowFunctions": true,
