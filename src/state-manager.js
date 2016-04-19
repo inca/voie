@@ -3,7 +3,6 @@ import Debug from 'debug';
 const debug = Debug('voie:manager');
 
 import EventEmitter from 'eventemitter3';
-import Vue from 'vue';
 import State from './state';
 import Transition from './transition';
 import { createHistory, useBasename} from 'history';
@@ -55,12 +54,16 @@ export default class StateManager extends EventEmitter {
    *
    *   * `handleUncaught` — `function(err) => Promise` invoked
    *     when transition fails with error
+   *
+   *   * `beforeEach` — `function(ctx, transition) => Promise` invoked
+   *     before each `enter` hook
    */
   constructor(spec) {
     super();
     this._setupEl(spec);
     this._setupHistory(spec);
     this._setupOptions(spec);
+    this._setupHooks(spec);
     this._setupState();
   }
 
@@ -99,6 +102,15 @@ export default class StateManager extends EventEmitter {
     this.activeClass = spec.activeClass || 'active';
   }
 
+  _setupHooks(spec) {
+    if (spec.beforeEach) {
+      this.beforeEach = spec.beforeEach;
+    }
+    if (spec.afterEach) {
+      this.afterEach = spec.afterEach;
+    }
+  }
+
   _setupState() {
     this.states = {};
     this.context = {
@@ -116,6 +128,20 @@ export default class StateManager extends EventEmitter {
     };
     this.transition = null;
   }
+
+  /**
+   * Executed before `enter` hooks on each state.
+   * 
+   * @returns {Promise}
+   */
+  beforeEach() {}
+
+  /**
+   * Executed after `leave` hooks on each state.
+   * 
+   * @returns {Promise}
+   */
+  afterEach() {}
 
   /**
    * Handles errors uncaught during transition.

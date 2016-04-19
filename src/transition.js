@@ -12,6 +12,10 @@ export default class Transition {
     this.params = Object.assign({}, manager.context.params);
   }
 
+  get to() {
+    return this.dstState;
+  }
+
   go(name, params, isRedirect) {
     debug(isRedirect ? 'redirect to %s' : 'go to %s', name);
     Object.assign(this.params, params || {});
@@ -64,7 +68,7 @@ export default class Transition {
       }
     }
     return Promise.resolve()
-      .then(() => state.leave(ctx))
+      .then(() => state.leave(ctx, this))
       .then(() => {
         debug(' <- left %s', state.name);
         this.cleanup(ctx);
@@ -103,7 +107,7 @@ export default class Transition {
       data: Object.assign({}, prevCtx.data)
     };
     return Promise.resolve()
-      .then(() => nextState.enter(nextContext))
+      .then(() => nextState.enter(nextContext, this))
       .catch(err => nextState.handleError(err, nextContext))
       .then(obj => {
         obj = obj || {};

@@ -51,10 +51,10 @@ export default class State {
    *     to this state; typically used in "abstract" states (e.g. layouts,
    *     data-preparation, etc.) to specify default sub-state
    *
-   *   * `enter` — optional `function(ctx) => Promise` hook invoked
+   *   * `enter` — optional `function(ctx, transition) => Promise` hook invoked
    *     when transitioning into this state or its descendants
    *
-   *   * `leave` — optional `function(ctx) => Promise` hook invoked
+   *   * `leave` — optional `function(ctx, transition) => Promise` hook invoked
    *     when transitioning from this state or its descendants
    *
    *   * `handleError` — optional `function(err, ctx) => Promise` invoked
@@ -158,9 +158,10 @@ export default class State {
    * by resolving `{ component: customVueComponent }`.
    *
    * @param ctx — object `{ state, params, data }`
+   * @param {Transition} transition
    * @returns {Promise}
    */
-  enter(ctx) {
+  enter(ctx, transition) {
     return Promise.resolve();
   }
 
@@ -173,9 +174,10 @@ export default class State {
    * by resolving `{ redirect: anotherStateName }`.
    *
    * @param ctx — object `{ state, params, data }`
+   * @param {Transition} transition
    * @returns {Promise}
    */
-  leave(ctx) {
+  leave(ctx, transition) {
     return Promise.resolve();
   }
 
