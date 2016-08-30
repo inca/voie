@@ -1,5 +1,11 @@
 # Voie.js
 
+**Important! Due to [breaking changes](https://github.com/vuejs/vue/issues/2873)
+in Vue 2.0 current versions of Voie (0.x.x) are now deprecated
+(feel free to use it with Vue 1.x.x).
+The 1.x.x will most probably be a major rewrite, so there's
+no guarantee of backwards compatibility. Sorry.**
+
 **Voie** /vwa/ (fr. "way") is a simple router / layout manager for [Vue.js](http://vuejs.org).
 Use it to build SPAs of your dreams.
 
@@ -8,8 +14,8 @@ Current status: **active development** — any feedback is appreciated.
 Simple example app is available on [GitHub](https://github.com/inca/voie-example)
 and [live on Netlify](http://voie-example.netlify.com/).
 
-[Standalone bundles](dist/) are also available, mostly for using with 
-jsfiddle, jsbin, codepen, etc. (note, Vue.js is **not** included in bundles). 
+[Standalone bundles](dist/) are also available, mostly for using with
+jsfiddle, jsbin, codepen, etc. (note, Vue.js is **not** included in bundles).
 
 You should never use them in real development — use module bundlers instead.
 
@@ -19,7 +25,7 @@ Unlike official [vue-router](https://github.com/vuejs/vue-router) which
 is organized around URLs, Voie is organized around _states_. Voie-based apps
 are basically [finite-state machines](https://en.wikipedia.org/wiki/Finite-state_machine).
 
-State is simply a _named_ logical "place" within your application. 
+State is simply a _named_ logical "place" within your application.
 
 Each state can _optionally_ have:
 
@@ -71,7 +77,7 @@ contain a single top-level element without flow control directives (`v-if`, `v-f
 ## Installation
 
 Examples assume ES6 and build environment
-([browserify](http://browserify.org/) + [babelify](https://github.com/babel/babelify) 
+([browserify](http://browserify.org/) + [babelify](https://github.com/babel/babelify)
 or [webpack](https://webpack.github.io/) + [babel-loader](https://github.com/babel/babel-loader))
 which is a mainstream.
 
@@ -169,11 +175,11 @@ will have a single parent state. "Root" states would have a `null` parent
 
 There are two ways of specifying a parent:
 
-  * using dot character `.` in state name 
+  * using dot character `.` in state name
     (e.g. `user` -> `user.transaction` -> `user.transaction.details`)
-    
+
   * explicitly using `parent` configuration parameter:
-  
+
     ```es6
     app.add('users', { ... });
     app.add('user', {
@@ -261,13 +267,13 @@ that accept _state context_ object.
 
 State context contains:
 
-  * `params` — a hash of `string` parameters matched from URL pattern, 
+  * `params` — a hash of `string` parameters matched from URL pattern,
     specified explicitly via `stateManager.go(...)` and inherited from parent context
   * `data` — object where you can write data to be exposed to Vue component and
     inherited states
   * `state` — `State` object to which this context corresponds
   * `parent` — parent context of this object
-  
+
 Typical `enter` hook will use `params` to fetch or prepare some data and expose it
 via `data` object.
 
@@ -307,7 +313,7 @@ new StateManager({
 
 Enter can optionally redirect to another state by
 returning (or resolving via promise) an object like this:
-`{ redirect: 'state.name' }` or 
+`{ redirect: 'state.name' }` or
 `{ redirect: { name: 'state.name', params: {} }`.
 
 When `redirect` is returned by `enter` hook the transition will always redirect
@@ -331,7 +337,7 @@ app.add('users', {
 });
 ```
 
-When `redirect` is specified as state configuration option it will 
+When `redirect` is specified as state configuration option it will
 only be effective when moving specifically to this state (in other words,
 no redirect occurs when transitioning through this state to another one).
 
@@ -353,24 +359,24 @@ Going from C to E implies:
   * leaving state B
   * entering state D
   * entering state E
-  
+
 By "leaving" we mean:
 
   * executing `leave` hook
   * destroying Vue component, if any
   * restoring the original state of `<v-view>` element where the component was rendered
-  
+
 By "entering" we mean:
 
   * preparing new context
   * executing `enter` hook
   * rendering Vue component, if any
   * preserving the original state of `<v-view>` so that it could later be restored
-  
+
 ### Parameters
 
 Each state has a specification of parameters it can accept when entered.
-Mandatory parameters (e.g. `userId` for state `user`) are classically specified 
+Mandatory parameters (e.g. `userId` for state `user`) are classically specified
 in pathname (e.g. `/user/28`).
 Optional parameters (e.g. `page`, `limit` for lists) are usually specified
 in querystring (e.g. `/users?page=5&limit=100`).
@@ -401,7 +407,7 @@ app.context.params
 **Note:** Voie doesn't do any type conversion on params, so they are returned as strings.
 
 When navigating between states specify parameters in `go` (or `v-link`):
- 
+
 ```es6
 app.go({
   name: 'user',
@@ -433,7 +439,7 @@ Now there's two ways of implementing history support in your application:
 
   * **HTML5** (cool, a bit more complex) — state will be maintained using
     pathname portion of URL (e.g. `https://myapp/user/1/transactions`)
-    
+
 HTML5 history requires server-side setup: server must reply with the same HTML
 wrapper to **all URLs** used by your application.
 
@@ -456,16 +462,16 @@ app.use('/~', appDataRouter);
 app.get('/*', (req, res) => res.sendFile('app.html'))
 ```
 
-This example shows potential gotchas: 
+This example shows potential gotchas:
 since `app.html` will be served for all GET requests, in order
-to serve other resources (e.g. static or compiled assets, scripts, 
+to serve other resources (e.g. static or compiled assets, scripts,
 stylesheets, application data, etc.) you'll need separate prefixes.
 Without these prefixes it won't be easy to configure your front web server
 ([nginx](http://nginx.org/en/) or Apache) for production.
 
 #### History setup
 
-Voie uses awesome [history](https://github.com/rackt/history) 
+Voie uses awesome [history](https://github.com/rackt/history)
 to provide apps with history support. HTML5 mode is used by default.
 
 Here's how to switch to hash-history (you need to install `history`):
@@ -489,7 +495,7 @@ for more options.
 It's a bit easier to setup servers using "base" URL for your app, e.g.:
 
 ```
-app.get('/app*', (req, res) => res.sendFile('app.html')) 
+app.get('/app*', (req, res) => res.sendFile('app.html'))
 ```
 
 In this case all you need to do is to add `<base href="/app"/>`
