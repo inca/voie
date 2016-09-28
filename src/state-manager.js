@@ -5,7 +5,7 @@ const debug = Debug('voie:manager');
 import EventEmitter from 'eventemitter3';
 import State from './state';
 import Transition from './transition';
-import { createHistory, useBasename} from 'history';
+import createHistory from 'history/createBrowserHistory';
 import './directives';
 
 /**
@@ -91,7 +91,7 @@ export default class StateManager extends EventEmitter {
       base = baseEl && baseEl.getAttribute('href');
     }
     base = (base || '').replace(/\/+$/, '');
-    this.history = useBasename(createHistory)({ basename: base });
+    this.history = createHistory({ basename: base });
   }
 
   _setupOptions(spec) {
@@ -131,14 +131,14 @@ export default class StateManager extends EventEmitter {
 
   /**
    * Executed before `enter` hooks on each state.
-   * 
+   *
    * @returns {Promise}
    */
   beforeEach() {}
 
   /**
    * Executed after `leave` hooks on each state.
-   * 
+   *
    * @returns {Promise}
    */
   afterEach() {}
@@ -305,7 +305,8 @@ export default class StateManager extends EventEmitter {
     if (this._unlisten) {
       return Promise.resolve();
     }
-    this._unlisten = this.history.listen(location => this._matchLocation(location));
+    this._matchLocation(window.location)
+    this._unlisten = this.history.listen((location, action) => {this._matchLocation(location)});
     return new Promise(resolve => this.once('history_updated', resolve));
   }
 

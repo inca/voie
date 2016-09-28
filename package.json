@@ -11,7 +11,7 @@
     "debug": "^2.2.0",
     "eslint": "^2.8.0",
     "eventemitter3": "^1.1.1",
-    "history": "^1.16.0",
+    "history": "^3.2.0",
     "path-to-regexp": "^1.2.1",
     "query-string": "^3.0.0",
     "vue": "^1.0.10"
